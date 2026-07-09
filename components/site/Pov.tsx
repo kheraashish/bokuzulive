@@ -1,0 +1,26 @@
+import { SectionShell } from "./ui";
+
+export function Pov() {
+  return (
+    <SectionShell className="py-24 lg:py-32">
+      <p className="kicker">The problem with AI outreach</p>
+      <div className="mt-6 grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-[1.2fr_1fr]">
+        <h2 className="display-lg text-bone">
+          Every tool promises volume. None of them can tell you when they{"'"}re guessing.
+        </h2>
+        <div className="max-w-prose space-y-5 self-end text-lg leading-relaxed text-ash">
+          <p>
+            The market is full of engines that spray personalized-sounding email and invent a
+            confidence score to match. A fabricated metric is worse than no metric: it spends your
+            credibility on the first reply.
+          </p>
+          <p>
+            Bokuzu is built the opposite way. It assesses craft against a fixed rubric, shows the
+            band and the confidence, and withholds when the signal is thin. The honesty is not a
+            setting. It is compiled into the product.
+          </p>
+        </div>
+      </div>
+    </SectionShell>
+  );
+}

@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Intro loader: the phrase shows at base size, disappears, returns larger, disappears. When it
+   ends, the "click here to enter" button is revealed. The click starts the video (with sound).
+   Sizes are viewport-relative and the phrase is allowed to wrap, so the larger pass always fits
+   the screen, on phones as well as desktops. */
+.intro-loader {
+  --intro-s1: clamp(1.35rem, 6.5vw, 2rem);
+  --intro-s2: clamp(1.9rem, 10vw, 3.25rem);
+  font-size: var(--intro-s1);
+  line-height: 1.18;
+  max-width: 92vw;
+}
+@keyframes introPulse {
+  0% {
+    opacity: 0;
+    font-size: var(--intro-s1);
+  }
+  6% {
+    opacity: 1;
+    font-size: var(--intro-s1);
+  }
+  30% {
+    opacity: 1;
+    font-size: var(--intro-s1);
+  }
+  37% {
+    opacity: 0;
+    font-size: var(--intro-s1);
+  }
+  43% {
+    opacity: 0;
+    font-size: var(--intro-s2);
+  }
+  50% {
+    opacity: 1;
+    font-size: var(--intro-s2);
+  }
+  90% {
+    opacity: 1;
+    font-size: var(--intro-s2);
+  }
+  100% {
+    opacity: 0;
+    font-size: var(--intro-s2);
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  body {
+    background-color: theme("colors.ink");
+    color: theme("colors.bone");
+    font-family: theme("fontFamily.sans");
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* faint plum vignette so the flat dark reads as warm, not black */
+    background-image: radial-gradient(
+        1100px 620px at 78% -8%,
+        rgba(199, 242, 59, 0.06),
+        transparent 60%
+      ),
+      radial-gradient(900px 520px at 4% 4%, rgba(217, 138, 91, 0.05), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: theme("colors.lime.DEFAULT");
+    color: theme("colors.ink");
+  }
+
+  :focus-visible {
+    outline: 2px solid theme("colors.lime.DEFAULT");
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* tabular figures for anything mono (ledger feel) */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "ss01" on;
+  }
+}
+
+@layer components {
+  /* fluid display scale, ≥1.25 between steps, extra line-height for light-on-dark */
+  .display-xl {
+    font-size: clamp(2.9rem, 1.6rem + 6.4vw, 6.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+  .display-lg {
+    font-size: clamp(2.1rem, 1.4rem + 3.4vw, 3.7rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+  }
+  .display-md {
+    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.2rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  .kicker {
+    font-family: theme("fontFamily.mono");
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: theme("colors.ash");
+  }
+
+  .rule {
+    height: 1px;
+    background: theme("colors.plum.line");
+  }
+}
