@@ -9,12 +9,16 @@ import { PortalDashboard } from "@/components/dashboard/PortalDashboard";
 //
 // Demo note: the session is a plain cookie set at login. In production this becomes the httpOnly,
 // HMAC-signed session (email + OTP) and getClient() becomes a tenant-scoped BigQuery read.
+//
+// Next 15: `params` and `cookies()` are async and must be awaited.
 export const dynamic = "force-dynamic";
 
-export default function CompanyPortal({ params }: { params: { company: string } }) {
-  const slug = decodeURIComponent(params.company || "").toLowerCase();
+export default async function CompanyPortal({ params }: { params: Promise<{ company: string }> }) {
+  const { company } = await params;
+  const slug = decodeURIComponent(company || "").toLowerCase();
 
-  const session = cookies().get("bokuzu_portal")?.value;
+  const cookieStore = await cookies();
+  const session = cookieStore.get("bokuzu_portal")?.value;
   if (!session) redirect(`/login?next=${encodeURIComponent(slug)}`);
 
   // A signed-in client can only view their own portal.
