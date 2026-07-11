@@ -90,16 +90,22 @@ export interface DeviceRow extends RowDataPacket {
 }
 
 export async function addTrustedDevice(clientId: string, deviceId: string, meta: { label?: string; ua?: string; ip?: string }): Promise<void> {
+  // On re-grant, reset created_at so the 30-day trust window renews from now.
   await q(
     `INSERT INTO trusted_devices (id, client_id, device_id, label, user_agent, ip)
      VALUES (:id, :c, :d, :l, :ua, :ip)
-     ON DUPLICATE KEY UPDATE last_seen_at = CURRENT_TIMESTAMP, user_agent = VALUES(user_agent)`,
+     ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP, last_seen_at = CURRENT_TIMESTAMP, user_agent = VALUES(user_agent)`,
     { id: crypto.randomUUID(), c: clientId, d: deviceId, l: meta.label ?? null, ua: (meta.ua || "").slice(0, 300) || null, ip: meta.ip ?? null }
   );
 }
 export async function isTrustedDevice(clientId: string, deviceId: string): Promise<boolean> {
   if (!deviceId) return false;
-  const rows = await q<RowDataPacket[]>(`SELECT 1 AS x FROM trusted_devices WHERE client_id = :c AND device_id = :d LIMIT 1`, { c: clientId, d: deviceId });
+  // Trust lasts a maximum of 30 days from when it was granted; after that, OTP is required again.
+  const rows = await q<RowDataPacket[]>(
+    `SELECT 1 AS x FROM trusted_devices
+     WHERE client_id = :c AND device_id = :d AND created_at > (NOW() - INTERVAL 30 DAY) LIMIT 1`,
+    { c: clientId, d: deviceId }
+  );
   return rows.length > 0;
 }
 export async function listDevices(clientId: string): Promise<DeviceRow[]> {
