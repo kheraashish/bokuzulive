@@ -4,20 +4,48 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
+const SITE = "https://bokuzu.com";
 const title = "Bokuzu: honest client acquisition at machine speed";
 const description =
-  "Bokuzu audits prospects on public data, scores creative craft against a rubric it will not fake, drafts sample concepts, and proposes every outward move for your approval. No invented metrics. Nothing sent without you.";
+  "Bokuzu is the honest client-acquisition and ad-reporting portal by Lautzu. It audits prospects on public data, scores creative against a rubric it will not fake, and shows each client their Google and Meta ad performance in one place, updated daily. No invented metrics.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bokuzu.com"),
-  title,
+  metadataBase: new URL(SITE),
+  title: {
+    default: title,
+    template: "%s · Bokuzu",
+  },
   description,
   applicationName: "Bokuzu",
+  keywords: [
+    "Bokuzu",
+    "bokuzu",
+    "Bokuzu Lautzu",
+    "Lautzu",
+    "Lautzu agency",
+    "client acquisition",
+    "ad performance dashboard",
+    "Google Ads reporting",
+    "Meta Ads reporting",
+    "agency client portal",
+    "honest marketing metrics",
+  ],
+  authors: [{ name: "Lautzu", url: "https://lautzu.com" }],
+  creator: "Lautzu",
+  publisher: "Bokuzu",
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
   openGraph: {
     title,
     description,
+    url: SITE,
     type: "website",
     siteName: "Bokuzu",
+    locale: "en_CA",
   },
   twitter: {
     card: "summary_large_image",
@@ -31,10 +59,37 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+// Structured data: tells Google that Bokuzu is a product by Lautzu (helps the two associate in search).
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE}/#org`,
+      name: "Bokuzu",
+      url: SITE,
+      logo: `${SITE}/icon.svg`,
+      email: "support@bokuzu.com",
+      description,
+      sameAs: ["https://lautzu.com"],
+      parentOrganization: { "@type": "Organization", name: "Lautzu", url: "https://lautzu.com" },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      name: "Bokuzu",
+      url: SITE,
+      publisher: { "@id": `${SITE}/#org` },
+      inLanguage: "en",
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="flex min-h-screen flex-col">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <div className="flex-1">{children}</div>
         <footer className="border-t border-plum-line/60 px-5 py-5 text-center">
           <a href="mailto:support@bokuzu.com" className="font-mono text-[11px] text-ash transition-colors hover:text-bone">
