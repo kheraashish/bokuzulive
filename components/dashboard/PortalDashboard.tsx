@@ -57,13 +57,17 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
 
       <header className="sticky top-0 z-30 border-b border-plum-line/70 bg-ink/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-shell flex-col gap-3 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div className="flex items-center gap-3">
-            <span className="grid h-7 w-7 place-items-center rounded-md bg-lime font-mono text-sm font-bold text-ink">b</span>
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              aria-label="Go to Bokuzu home"
+              className="flex items-center gap-3 rounded-md transition-opacity duration-200 ease-out hover:opacity-80"
+            >
+              <span className="grid h-7 w-7 place-items-center rounded-md bg-lime font-mono text-sm font-bold text-ink">b</span>
               <span className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-lime">Bokuzu</span>
-              <span className="text-plum-line" aria-hidden>|</span>
-              <span className="text-[15px] font-semibold tracking-tight text-bone">{client.brand}</span>
-            </div>
+            </Link>
+            <span className="text-plum-line" aria-hidden>|</span>
+            <span className="text-[15px] font-semibold tracking-tight text-bone">{client.brand}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-1.5 rounded-full border border-plum-line bg-plum-raise/60 px-1 py-1">
