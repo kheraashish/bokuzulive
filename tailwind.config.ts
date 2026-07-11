@@ -62,10 +62,23 @@ const config: Config = {
           "0%, 49%": { opacity: "1" },
           "50%, 100%": { opacity: "0" },
         },
+        // one-time confidence-band highlight in the hero engine card (micro-life, not looping)
+        bandpulse: {
+          "0%": { boxShadow: "0 0 0 0 rgba(199,242,59,0)" },
+          "22%": { boxShadow: "0 0 0 3px rgba(199,242,59,0.30)" },
+          "60%, 100%": { boxShadow: "0 0 0 0 rgba(199,242,59,0)" },
+        },
+        // hero connectors drawing in (stroke-dashoffset from full to 0; paths use pathLength=1)
+        draw: {
+          from: { strokeDashoffset: "1" },
+          to: { strokeDashoffset: "0" },
+        },
       },
       animation: {
         rise: "rise 0.7s cubic-bezier(0.23,1,0.32,1) both",
         blink: "blink 1.1s steps(1) infinite",
+        bandpulse: "bandpulse 1.8s ease-out both",
+        draw: "draw 0.5s ease-out both",
       },
     },
   },
