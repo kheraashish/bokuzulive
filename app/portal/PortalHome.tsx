@@ -158,6 +158,26 @@ function Brand({ brand, logoUrl }: { brand: string | null; logoUrl: string | nul
 function Home({ me }: { me: Me }) {
   const [showWait, setShowWait] = useState(false);
   const first = me.name?.split(" ")[0];
+
+  // Not onboarded with the agency yet -> invite them to book a call.
+  if (me.agencyOnboarded === "no") {
+    return (
+      <div className="mx-auto max-w-2xl py-14 text-center">
+        <p className="font-mono text-xs uppercase tracking-[0.16em] text-lime">Almost there</p>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-bone sm:text-4xl">Let&apos;s get you started</h1>
+        <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-ash">
+          To turn on your dashboard, our team first connects your Google and Meta ad accounts. Book a quick call and we&apos;ll get you set up.
+        </p>
+        <div className="mt-8">
+          <a href="https://lautzu.com/contact" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-lime px-8 py-4 text-sm font-semibold text-ink shadow-glow transition-transform hover:bg-lime-press active:scale-[0.98]">
+            Book a call <span aria-hidden>&rarr;</span>
+          </a>
+        </div>
+        <p className="mt-4 font-mono text-[11px] text-ash">lautzu.com/contact</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl py-10 text-center">
       <p className="font-mono text-xs uppercase tracking-[0.16em] text-lime">Welcome to Bokuzu</p>
