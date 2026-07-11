@@ -19,7 +19,7 @@ export function EngineCard() {
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ash">
           <Dot tone="ok" /> audit ledger
         </div>
-        <span className="font-mono text-[11px] text-ash">prospect · endy</span>
+        <span className="font-mono text-[11px] text-ash">prospect · arlo</span>
       </div>
       <div className="space-y-3 p-4">
         <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">

@@ -50,7 +50,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-lime px-4 py-2 text-center font-mono text-[11px] text-ink">
           <span className="font-semibold uppercase tracking-[0.12em]">Example dashboard</span>
           <span aria-hidden>·</span>
-          <span>sample Demo Client data, this is a preview</span>
+          <span>sample Demo Client data — this is a preview</span>
           <Link href="/#waitlist" className="font-semibold underline underline-offset-2">Request access</Link>
         </div>
       )}

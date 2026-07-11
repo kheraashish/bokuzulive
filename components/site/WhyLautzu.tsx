@@ -38,6 +38,10 @@ export function WhyLautzu() {
           honesty rail.
         </p>
 
+        <p className="mt-5 text-lg leading-relaxed text-ash">
+          Inside and out, the same rule: the machine proposes, a human decides.
+        </p>
+
         <p className="mt-8">
           <a
             href="https://lautzu.com"
