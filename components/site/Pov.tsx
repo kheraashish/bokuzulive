@@ -9,7 +9,8 @@ export function Pov() {
       </p>
       <div className="mt-8 grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-[1.2fr_1fr]">
         <h2 className="display-lg text-bone">
-          Every tool promises volume. None of them can tell you when they{"'"}re guessing.
+          Every tool promises volume. None of them can tell you when they{"'"}re{" "}
+          <span className="text-lime">guessing.</span>
         </h2>
         <div className="max-w-prose space-y-5 self-end text-lg leading-relaxed text-ash">
           <p>

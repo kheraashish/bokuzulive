@@ -10,8 +10,9 @@ const links = [
   { href: "#portal", label: "Client portal" },
 ];
 
-// Sticky nav. Above ~900px the four section links + lautzu.com + Sign in + Request access all sit
-// inline. Below 900px they collapse into a hamburger menu; lautzu.com stays visible inside it.
+// Sticky nav. Above ~900px the section links + lautzu.com + Sign in + Request access + the primary
+// "Dashboard example" pill sit inline. Below 900px they collapse into a hamburger; all four actions
+// (Dashboard example, Request access, Sign in, lautzu.com) stay in the menu.
 export function Nav() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -60,10 +61,16 @@ export function Nav() {
           </Link>
           <a
             href="#waitlist"
-            className="rounded-full bg-lime px-4 py-2 text-sm font-semibold text-ink shadow-glow transition-transform duration-200 ease-out hover:bg-lime-press active:scale-[0.98]"
+            className="rounded-full border border-plum-line px-4 py-2 text-sm font-medium text-bone transition-colors duration-200 ease-out hover:border-lime hover:bg-lime hover:text-ink active:scale-[0.98]"
           >
             Request access
           </a>
+          <Link
+            href="/example"
+            className="rounded-full bg-lime px-4 py-2 text-sm font-semibold text-ink shadow-glow transition-transform duration-200 ease-out hover:bg-lime-press active:scale-[0.98]"
+          >
+            Dashboard example
+          </Link>
         </div>
 
         {/* mobile hamburger */}
@@ -109,7 +116,21 @@ export function Nav() {
               lautzu.com
               <span aria-hidden>&#8599;</span>
             </a>
-            <div className="mt-3 flex gap-2.5">
+            <Link
+              href="/example"
+              onClick={close}
+              className="mt-3 flex min-h-[44px] items-center justify-center rounded-full bg-lime px-4 text-sm font-semibold text-ink shadow-glow transition-transform hover:bg-lime-press active:scale-[0.98]"
+            >
+              Dashboard example
+            </Link>
+            <div className="mt-2.5 flex gap-2.5">
+              <a
+                href="#waitlist"
+                onClick={close}
+                className="flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-plum-line px-4 text-sm font-medium text-bone transition-colors hover:border-lime hover:bg-lime hover:text-ink"
+              >
+                Request access
+              </a>
               <Link
                 href="/login"
                 onClick={close}
@@ -117,13 +138,6 @@ export function Nav() {
               >
                 Sign in
               </Link>
-              <a
-                href="#waitlist"
-                onClick={close}
-                className="flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-lime px-4 text-sm font-semibold text-ink shadow-glow transition-transform hover:bg-lime-press active:scale-[0.98]"
-              >
-                Request access
-              </a>
             </div>
           </div>
         </nav>
