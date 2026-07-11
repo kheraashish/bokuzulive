@@ -48,16 +48,12 @@ export function Hero() {
                 d={d}
                 pathLength={1}
                 strokeDasharray={1}
-                stroke="#C7F23B"
                 strokeWidth={1.75}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 vectorEffect="non-scaling-stroke"
-                className="animate-draw"
-                style={{
-                  animationDelay: `${640 + i * 40}ms`,
-                  filter: "drop-shadow(0 0 3px rgba(199,242,59,0.45))",
-                }}
+                className="animate-draw stroke-lime [filter:drop-shadow(0_0_3px_theme(colors.lime.DEFAULT/45%))]"
+                style={{ animationDelay: `${640 + i * 40}ms` }}
               />
             ))}
           </svg>

@@ -70,6 +70,9 @@ export function PortalCard() {
   // Gently tour the preview section by section and loop. Stops come from the page's own zone
   // headings, so it lands on a real section each time instead of racing to the bottom.
   useEffect(() => {
+    // Respect reduced-motion: leave the preview still instead of auto-scrolling it.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const HOLD = 2600;
     let stops: number[] = [];
     let idx = 0;
