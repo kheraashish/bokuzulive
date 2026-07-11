@@ -25,6 +25,7 @@ function tx(): nodemailer.Transporter {
 export interface SendResult {
   delivered: boolean;
   devPreview?: string; // body echoed back in dev when SMTP is not configured (for testing only)
+  error?: string; // the SMTP error, if the send failed
 }
 
 export async function sendMail(opts: { to: string; subject: string; text: string; html?: string }): Promise<SendResult> {
@@ -33,12 +34,18 @@ export async function sendMail(opts: { to: string; subject: string; text: string
     console.log(preview);
     return { delivered: false, devPreview: process.env.NODE_ENV !== "production" ? opts.text : undefined };
   }
-  await tx().sendMail({
-    from: process.env.MAIL_FROM || process.env.SMTP_USER,
-    to: opts.to,
-    subject: opts.subject,
-    text: opts.text,
-    html: opts.html,
-  });
-  return { delivered: true };
+  try {
+    await tx().sendMail({
+      from: process.env.MAIL_FROM || process.env.SMTP_USER,
+      to: opts.to,
+      subject: opts.subject,
+      text: opts.text,
+      html: opts.html,
+    });
+    return { delivered: true };
+  } catch (e) {
+    const msg = (e as Error).message;
+    console.error("sendMail failed:", msg);
+    return { delivered: false, error: msg };
+  }
 }

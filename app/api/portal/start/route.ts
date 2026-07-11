@@ -34,5 +34,8 @@ export async function POST(req: Request) {
   }
 
   const dev = await issueCode(email);
+  if (!dev.sent && process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "We couldn't email your code right now. Please try again in a minute." }, { status: 502 });
+  }
   return NextResponse.json({ status: "otp", devCode: dev.devCode });
 }
