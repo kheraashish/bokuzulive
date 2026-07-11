@@ -151,6 +151,12 @@ export async function completeSetup(userId: string, input: { companyName: string
 }
 
 // ── client (company) ──────────────────────────────────────────────────────────
+/** Does a company with this slug exist? Lets the /<company> route tell a real client
+ *  URL (gate to login) from a typo / bad URL (show the friendly not-found page). */
+export async function clientSlugExists(slug: string): Promise<boolean> {
+  const rows = await q<RowDataPacket[]>(`SELECT 1 AS x FROM clients WHERE slug = :s LIMIT 1`, { s: norm(slug) });
+  return rows.length > 0;
+}
 export async function getClientPublic(clientId: string): Promise<ClientPublic | null> {
   const rows = await q<ClientPublic[]>(
     `SELECT id, slug, brand, logo_url, currency, agency_onboarded FROM clients WHERE id = :id LIMIT 1`,

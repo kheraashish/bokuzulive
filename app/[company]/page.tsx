@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { dbConfigured } from "@/lib/db/pool";
 import { smsConfigured } from "@/lib/sms";
 import { currentContext, currentDeviceId } from "@/lib/portalCurrent";
-import { listUserDevices } from "@/lib/db/users";
+import { clientSlugExists, listUserDevices } from "@/lib/db/users";
 import { ClientHub } from "./ClientHub";
 
 // The client's portal hub at bokuzu.com/<company>: Dashboard / Support / Settings tabs. Access =
@@ -15,6 +15,11 @@ export default async function CompanyPortal({ params }: { params: Promise<{ comp
   const slug = decodeURIComponent(company || "").toLowerCase();
 
   if (!dbConfigured()) redirect("/login");
+
+  // A real client slug gates to login; anything else (typos, crawler guesses like /news.html)
+  // is a genuine wrong URL — show the friendly not-found page instead of bouncing to login.
+  if (!(await clientSlugExists(slug))) notFound();
+
   const ctx = await currentContext();
   if (!ctx) redirect(`/login?next=${encodeURIComponent(slug)}`);
   if (!ctx.client || !ctx.client.agency_onboarded) redirect("/portal"); // finish setup first
