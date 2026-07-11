@@ -56,14 +56,13 @@ export function Footer() {
             Scores are rubric-based craft assessments. Not measured performance metrics.
           </p>
           <p className="font-mono text-[11px] text-ash">
-            Our marketing agency{" "}
             <a
               href="https://lautzu.com"
               target="_blank"
               rel="noopener"
               className="text-bone transition-colors hover:text-lime"
             >
-              lautzu.com
+              our marketing agency Lautzu
             </a>
             <span className="mx-2.5 text-plum-line">·</span>© {new Date().getFullYear()} Bokuzu. Canadian data residency.
           </p>

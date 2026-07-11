@@ -77,6 +77,12 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
       </header>
 
       <main className="mx-auto max-w-shell px-5 py-8 sm:px-8">
+        <h1 className="sr-only">
+          {example
+            ? "Bokuzu client dashboard example — Google and Meta ad spend, ROAS and CPA per platform, funnel breakdown, live ads and a full log of agency optimizations, synced with every platform refresh."
+            : `${client.brand} — Bokuzu client dashboard: Google and Meta ad spend, ROAS and CPA per platform, synced with every platform refresh.`}
+        </h1>
+
         {/* connections */}
         <div className="mb-9 flex flex-wrap items-center gap-3">
           <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ash">Connections</span>
@@ -195,8 +201,9 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
           <span className="text-[12px] text-ash">the words running now, with performance</span>
         </div>
         <section className="overflow-hidden rounded-2xl border border-plum-line bg-plum">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left">
+          <div className="relative">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left">
               <thead>
                 <tr className="border-b border-plum-line font-mono text-[11px] uppercase tracking-[0.1em] text-ash">
                   <th className="px-5 py-3 font-medium">Headline</th>
@@ -222,9 +229,15 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
                 ))}
               </tbody>
             </table>
+            </div>
+            {/* subtle right-edge fade cues horizontal swipe on narrow screens */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-plum to-transparent lg:hidden" aria-hidden />
           </div>
           <p className="border-t border-plum-line/60 px-5 py-3 font-mono text-[11px] text-ash">Showing {v.adCopy.length} of {v.adCopyTotal} live text ads, by spend.</p>
         </section>
+        <p className="mt-2 font-mono text-[11px] leading-relaxed text-ash">
+          Shopping and Performance Max ads carry no editable headline — &ldquo;(no headline)&rdquo; is normal, not missing data.
+        </p>
 
         {/* ── ZONE 4: AGENCY ACTIVITY ── */}
         <ZoneHead title="Agency activity" meta="Optimization events, by platform" className="mt-12" />
@@ -257,7 +270,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         </section>
 
         <p className="mt-12 border-t border-plum-line/60 pt-6 font-mono text-[11px] text-ash">
-          Bokuzu portal · {client.brand} · figures shown are sample data for this demo. Numbers update once every 24 hours once live.
+          Bokuzu portal · {client.brand} · Figures shown are sample data for this demo. Once live, numbers update with every Google and Meta platform refresh.
         </p>
       </main>
     </div>

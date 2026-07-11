@@ -24,6 +24,11 @@ export function Waitlist() {
             opens. One email about your invite, nothing else.
           </p>
 
+          <p className="mt-6 max-w-prose rounded-xl border border-plum-line bg-plum px-4 py-3 text-sm leading-relaxed text-bone/90">
+            The client portal is live today for every Lautzu engagement. The outreach engine is in a
+            single-operator pilot — request a seat below.
+          </p>
+
           {done ? (
             <div className="mt-9 flex items-center gap-3 rounded-xl border border-ok/40 bg-plum px-5 py-4">
               <Dot tone="ok" />

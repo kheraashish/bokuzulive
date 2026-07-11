@@ -5,9 +5,9 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 const SITE = "https://bokuzu.com";
-const title = "Bokuzu: honest client acquisition at machine speed";
+const title = "Bokuzu — Client Transparency Portal & Honest Outreach Engine by Lautzu";
 const description =
-  "Bokuzu is the honest client-acquisition and ad-reporting portal by Lautzu. It audits prospects on public data, scores creative against a rubric it will not fake, and shows each client their Google and Meta ad performance in one place, updated daily. No invented metrics.";
+  "Bokuzu is the transparency portal behind Lautzu, a performance marketing agency. Clients see Google & Meta ad spend, ROAS and every optimization we make — analysis ready the moment the platforms refresh. Prospect audits on public data that never fabricate a metric.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
@@ -73,6 +73,12 @@ const jsonLd = {
       description,
       sameAs: ["https://lautzu.com"],
       parentOrganization: { "@type": "Organization", name: "Lautzu", url: "https://lautzu.com" },
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: "support@bokuzu.com",
+        contactType: "customer support",
+      },
+      address: { "@type": "PostalAddress", addressCountry: "CA" },
     },
     {
       "@type": "WebSite",
@@ -92,21 +98,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <div className="flex-1">{children}</div>
         <footer className="border-t border-plum-line/60 px-5 py-5 text-center">
-          <p className="font-mono text-[11px] leading-relaxed text-ash">
-            <a href="mailto:support@bokuzu.com" className="transition-colors hover:text-bone">
-              support@bokuzu.com
-            </a>
-            <span className="mx-2.5 text-plum-line">·</span>
-            Our marketing agency{" "}
-            <a
-              href="https://lautzu.com"
-              target="_blank"
-              rel="noopener"
-              className="text-bone transition-colors hover:text-lime"
-            >
-              lautzu.com
-            </a>
-          </p>
+          <a href="mailto:support@bokuzu.com" className="font-mono text-[11px] text-ash transition-colors hover:text-bone">
+            support@bokuzu.com
+          </a>
         </footer>
       </body>
     </html>

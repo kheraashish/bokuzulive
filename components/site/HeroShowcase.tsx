@@ -155,10 +155,14 @@ export function HeroShowcase() {
         </div>
       </div>
 
-      <p className="mt-3 px-1 font-mono text-[11px] text-ash">
+      {/* Caption is tied to the SAME `flipped` state as the card, so the two never desync. */}
+      <p className="mt-3 px-1 font-mono text-xs leading-relaxed text-ash" aria-live="polite">
+        <span className="uppercase tracking-[0.12em] text-lime">
+          {flipped ? "For Lautzu clients — " : "For prospects — "}
+        </span>
         {flipped
-          ? "A live client dashboard: their Google and Meta ad data, updated daily."
-          : "Live shape of a real run. Empty sources are stored as data, never guessed."}
+          ? "your live portal. Google and Meta data, synced with every platform refresh."
+          : "the audit that opens the conversation. Empty sources are stored as data, never guessed."}
       </p>
     </div>
   );

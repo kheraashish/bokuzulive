@@ -10,7 +10,7 @@ export function Hero() {
         <div className="flex flex-col justify-center">
           <div className="animate-rise" style={{ animationDelay: "40ms" }}>
             <Chip tone="lime">
-              <Dot tone="lime" /> Client acquisition, honest by construction
+              <Dot tone="lime" /> Honest by construction
             </Chip>
           </div>
 
@@ -59,7 +59,9 @@ export function Hero() {
             className="mt-8 animate-rise font-mono text-xs leading-relaxed text-ash"
             style={{ animationDelay: "340ms" }}
           >
-            No CTR. No ROAS. No spend numbers you can{"'"}t trace. If the signal is thin, it says so.
+            Prospect audits carry no invented numbers — no fabricated CTR, no guessed ROAS. Client
+            dashboards carry only platform-reported ones, traced to source. If the signal is thin,
+            it says so.
           </p>
         </div>
 
