@@ -30,6 +30,17 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-2.5">
+          <a
+            href="https://lautzu.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group hidden items-center gap-1.5 rounded-full border border-plum-line px-4 py-2 text-sm font-medium text-ash transition-colors duration-200 ease-out hover:border-lime hover:bg-lime hover:text-ink active:scale-[0.98] sm:inline-flex"
+          >
+            lautzu.com
+            <span aria-hidden className="transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+              &#8599;
+            </span>
+          </a>
           <Link
             href="/login"
             className="rounded-full border border-plum-line px-4 py-2 text-sm font-medium text-bone transition-colors duration-200 ease-out hover:border-lime hover:bg-lime hover:text-ink active:scale-[0.98]"
