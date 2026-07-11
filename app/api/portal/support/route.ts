@@ -7,23 +7,34 @@ import { sendMail } from "@/lib/mailer";
 export const runtime = "nodejs";
 const SUPPORT_TO = "info@lautzu.com";
 
-// Raise a support ticket: stored in the DB and emailed to the support inbox.
+// Raise a support ticket from a single message. Stored in the DB, emailed to our inbox with a fixed
+// "Bokuzu client support ticket" subject (so we know it's from Bokuzu), and a confirmation with the
+// same ticket number is emailed to the client.
 export async function POST(req: Request) {
   const ctx = await currentContext();
   if (!ctx) return NextResponse.json({ error: "not signed in" }, { status: 401 });
   if (!dbConfigured()) return NextResponse.json({ error: "not configured" }, { status: 503 });
 
-  const { subject, message } = (await req.json().catch(() => ({}))) as { subject?: string; message?: string };
-  if (!subject?.trim() || !message?.trim()) return NextResponse.json({ error: "Subject and message are required." }, { status: 400 });
+  const { message } = (await req.json().catch(() => ({}))) as { message?: string };
+  if (!message?.trim()) return NextResponse.json({ error: "Please describe what you need help with." }, { status: 400 });
 
   const brand = ctx.client?.brand ?? null;
-  const id = await createTicket({ clientId: ctx.client?.id ?? null, email: ctx.user.email, brand, subject: subject.trim(), message: message.trim() });
+  const email = ctx.user.email;
+  const { ticketNo } = await createTicket({ clientId: ctx.client?.id ?? null, email, brand, subject: "Bokuzu client support ticket", message: message.trim() });
 
+  // To us: fixed subject so it is unmistakably a Bokuzu ticket.
   await sendMail({
     to: SUPPORT_TO,
-    subject: `[Bokuzu support] ${brand || ctx.user.email}: ${subject.trim()}`,
-    text: `Ticket ${id}\nFrom: ${ctx.user.email}${brand ? ` (${brand})` : ""}\n\n${message.trim()}`,
+    subject: "Bokuzu client support ticket",
+    text: `Ticket: ${ticketNo}\nFrom: ${email}${brand ? ` (${brand})` : ""}\n\n${message.trim()}`,
   }).catch(() => {});
 
-  return NextResponse.json({ ok: true, id });
+  // To the client: confirmation carrying the same ticket number.
+  await sendMail({
+    to: email,
+    subject: `Your Bokuzu support ticket ${ticketNo}`,
+    text: `Hi,\n\nWe've received your support request. Your ticket number is ${ticketNo}. Our team will reply to this email shortly.\n\nWhat you sent us:\n${message.trim()}\n\nThanks,\nThe Bokuzu team`,
+  }).catch(() => {});
+
+  return NextResponse.json({ ok: true, ticketNo });
 }

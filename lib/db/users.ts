@@ -2,6 +2,7 @@ import "server-only";
 import crypto from "crypto";
 import type { RowDataPacket } from "mysql2";
 import { q } from "./pool";
+import { encrypt, decrypt } from "@/lib/crypto";
 
 // Passwordless portal users. A user is an email that may be linked to a client (company). Multiple
 // users can belong to one client (owner + members). Login is email + one-time code; no passwords.
@@ -14,6 +15,7 @@ export interface UserRow extends RowDataPacket {
   name: string | null;
   phone: string | null;
   twofa_sms: number;
+  twofa_totp: number;
 }
 
 export interface ClientPublic extends RowDataPacket {
@@ -29,7 +31,7 @@ const norm = (s: string) => s.trim().toLowerCase();
 
 export async function findUserByEmail(email: string): Promise<UserRow | null> {
   const rows = await q<UserRow[]>(
-    `SELECT id, email, client_id, role, name, phone, twofa_sms FROM portal_users WHERE email = :e LIMIT 1`,
+    `SELECT id, email, client_id, role, name, phone, twofa_sms, twofa_totp FROM portal_users WHERE email = :e LIMIT 1`,
     { e: norm(email) }
   );
   return rows[0] ?? null;
@@ -46,7 +48,7 @@ export async function findOrCreateUser(email: string): Promise<UserRow> {
 
 export async function getUserById(id: string): Promise<UserRow | null> {
   const rows = await q<UserRow[]>(
-    `SELECT id, email, client_id, role, name, phone, twofa_sms FROM portal_users WHERE id = :id LIMIT 1`,
+    `SELECT id, email, client_id, role, name, phone, twofa_sms, twofa_totp FROM portal_users WHERE id = :id LIMIT 1`,
     { id }
   );
   return rows[0] ?? null;
@@ -62,6 +64,19 @@ export async function setUser2faSms(id: string, on: boolean): Promise<void> {
   await q(`UPDATE portal_users SET twofa_sms = :v WHERE id = :id`, { v: on ? 1 : 0, id });
 }
 
+// ── authenticator app (TOTP) ──────────────────────────────────────────────────
+export async function enableTotp(userId: string, secret: string): Promise<void> {
+  await q(`UPDATE portal_users SET totp_secret_enc = :s, twofa_totp = 1 WHERE id = :id`, { s: encrypt(secret), id: userId });
+}
+export async function disableTotp(userId: string): Promise<void> {
+  await q(`UPDATE portal_users SET totp_secret_enc = NULL, twofa_totp = 0 WHERE id = :id`, { id: userId });
+}
+export async function getTotpSecret(userId: string): Promise<string | null> {
+  const rows = await q<RowDataPacket[]>(`SELECT totp_secret_enc FROM portal_users WHERE id = :id LIMIT 1`, { id: userId });
+  const enc = rows[0]?.totp_secret_enc as string | null | undefined;
+  return enc ? decrypt(enc) : null;
+}
+
 /** Operator: attach an email to a client as owner/member (creates the user if new, or re-links). */
 export async function addUserToClient(clientId: string, email: string, role: "owner" | "member"): Promise<void> {
   const e = norm(email);
@@ -73,7 +88,7 @@ export async function addUserToClient(clientId: string, email: string, role: "ow
 }
 export async function listUsersForClient(clientId: string): Promise<UserRow[]> {
   return q<UserRow[]>(
-    `SELECT id, email, client_id, role, name, phone, twofa_sms FROM portal_users WHERE client_id = :c ORDER BY role DESC, created_at ASC`,
+    `SELECT id, email, client_id, role, name, phone, twofa_sms, twofa_totp FROM portal_users WHERE client_id = :c ORDER BY role DESC, created_at ASC`,
     { c: clientId }
   );
 }

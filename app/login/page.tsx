@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 // A new email creates an account automatically. Trusted devices skip the code for up to 30 days.
 export default function LoginPage() {
   const router = useRouter();
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const [step, setStep] = useState<"email" | "otp" | "totp">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [remember, setRemember] = useState(true);
@@ -29,6 +29,7 @@ export default function LoginPage() {
     setBusy(false);
     if (j.status === "ok") return done();               // trusted device, no code needed
     if (j.status === "otp") { setDevCode(j.devCode); setStep("otp"); return; }
+    if (j.status === "totp") { setStep("totp"); return; } // uses their authenticator app
     setError(j.error || "Something went wrong.");
   };
 
@@ -61,7 +62,22 @@ export default function LoginPage() {
           <div className="rounded-2xl border border-plum-line bg-plum p-7 shadow-lift sm:p-9">
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ash">Client portal</p>
 
-            {step === "email" ? (
+            {step === "totp" ? (
+              <>
+                <h1 className="mt-3 text-2xl font-semibold tracking-tight text-bone">Enter your app code</h1>
+                <p className="mt-2 text-sm leading-relaxed text-ash">Open your authenticator app and enter the current 6-digit code for Bokuzu.</p>
+                <form className="mt-6 space-y-4" onSubmit={verify}>
+                  <Field id="tcode" label="6-digit code" value={code} onChange={setCode} placeholder="123456" mono inputMode="numeric" />
+                  <label className="flex items-center gap-2 text-sm text-ash">
+                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="accent-lime" />
+                    Remember me on this device (30 days)
+                  </label>
+                  {error && <p className="font-mono text-[11px] text-bad">{error}</p>}
+                  <button type="submit" disabled={busy || code.length < 6} className={btn}>{busy ? "Verifying…" : "Verify & sign in"}</button>
+                </form>
+                <button onClick={() => { setStep("email"); setError(""); setCode(""); }} className="mt-4 font-mono text-[11px] text-ash underline-offset-4 hover:text-bone hover:underline">Use a different email</button>
+              </>
+            ) : step === "email" ? (
               <>
                 <h1 className="mt-3 text-2xl font-semibold tracking-tight text-bone">Sign in with your email</h1>
                 <p className="mt-2 text-sm leading-relaxed text-ash">No password needed. We email you a 6-digit code to sign in.</p>

@@ -28,6 +28,11 @@ export async function POST(req: Request) {
     return res;
   }
 
+  // Authenticator-app user -> prompt for the app code (no email sent).
+  if (existing && existing.twofa_totp === 1) {
+    return NextResponse.json({ status: "totp" });
+  }
+
   const dev = await issueCode(email);
   return NextResponse.json({ status: "otp", devCode: dev.devCode });
 }

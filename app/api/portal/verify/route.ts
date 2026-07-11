@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
 import { dbConfigured } from "@/lib/db/pool";
 import { verifyCode } from "@/lib/db/auth";
-import { findOrCreateUser, updateLastLogin, addUserDevice, getClientPublic, clientIsLive } from "@/lib/db/users";
+import { findOrCreateUser, findUserByEmail, updateLastLogin, addUserDevice, getClientPublic, clientIsLive, getTotpSecret } from "@/lib/db/users";
+import { verifyTotp } from "@/lib/totp";
 import { makeSession, newDeviceId, cookieOpts, deviceCookieOpts, SESSION_COOKIE, DEVICE_COOKIE } from "@/lib/clientAuth";
 
 export const runtime = "nodejs";
@@ -12,8 +13,16 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   if (!dbConfigured()) return NextResponse.json({ error: "Portal not configured yet." }, { status: 503 });
   const { email, code, remember } = (await req.json().catch(() => ({}))) as { email?: string; code?: string; remember?: boolean };
-  if (!email || !code) return NextResponse.json({ error: "Enter the code we emailed you." }, { status: 400 });
-  if (!(await verifyCode(email, code))) return NextResponse.json({ error: "Wrong or expired code." }, { status: 401 });
+  if (!email || !code) return NextResponse.json({ error: "Enter your code." }, { status: 400 });
+
+  // Authenticator-app users verify with their app code; everyone else with the emailed code.
+  const existing = await findUserByEmail(email);
+  if (existing && existing.twofa_totp === 1) {
+    const secret = await getTotpSecret(existing.id);
+    if (!secret || !verifyTotp(code, secret)) return NextResponse.json({ error: "Wrong code from your authenticator app." }, { status: 401 });
+  } else if (!(await verifyCode(email, code))) {
+    return NextResponse.json({ error: "Wrong or expired code." }, { status: 401 });
+  }
 
   const user = await findOrCreateUser(email); // auto-creates the account on first sign-in
   await updateLastLogin(user.id);

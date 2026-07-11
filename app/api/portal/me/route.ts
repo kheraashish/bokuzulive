@@ -19,6 +19,7 @@ export async function GET() {
     phone: ctx.user.phone,
     role: ctx.user.role,
     smsCodes: ctx.user.twofa_sms === 1,
+    authenticator: ctx.user.twofa_totp === 1,
     brand: ctx.client?.brand ?? null,
     slug: ctx.client?.slug ?? null,
     linked: Boolean(ctx.client),

@@ -122,12 +122,20 @@ export async function touchDevice(clientId: string, deviceId: string): Promise<v
 }
 
 // ── support tickets ───────────────────────────────────────────────────────────
-export async function createTicket(input: { clientId?: string | null; email: string; brand?: string | null; subject: string; message: string }): Promise<string> {
+function ticketNumber(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no ambiguous chars
+  let s = "";
+  for (let i = 0; i < 6; i++) s += chars[crypto.randomInt(0, chars.length)];
+  return `BKZ-${s}`;
+}
+
+export async function createTicket(input: { clientId?: string | null; email: string; brand?: string | null; subject: string; message: string }): Promise<{ id: string; ticketNo: string }> {
   const id = crypto.randomUUID();
+  const ticketNo = ticketNumber();
   await q(
-    `INSERT INTO support_tickets (id, client_id, email, brand, subject, message)
-     VALUES (:id, :c, :e, :b, :s, :m)`,
-    { id, c: input.clientId ?? null, e: norm(input.email), b: input.brand ?? null, s: input.subject.slice(0, 200), m: input.message }
+    `INSERT INTO support_tickets (id, client_id, email, brand, subject, message, ticket_no)
+     VALUES (:id, :c, :e, :b, :s, :m, :t)`,
+    { id, c: input.clientId ?? null, e: norm(input.email), b: input.brand ?? null, s: input.subject.slice(0, 200), m: input.message, t: ticketNo }
   );
-  return id;
+  return { id, ticketNo };
 }

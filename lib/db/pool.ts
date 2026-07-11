@@ -135,6 +135,9 @@ const ALTERS: string[] = [
   `ALTER TABLE clients ADD COLUMN agency_onboarded VARCHAR(10) NULL`,
   `ALTER TABLE portal_users ADD COLUMN phone VARCHAR(40) NULL`,
   `ALTER TABLE portal_users ADD COLUMN twofa_sms TINYINT(1) NOT NULL DEFAULT 0`,
+  `ALTER TABLE portal_users ADD COLUMN twofa_totp TINYINT(1) NOT NULL DEFAULT 0`,
+  `ALTER TABLE portal_users ADD COLUMN totp_secret_enc TEXT NULL`,
+  `ALTER TABLE support_tickets ADD COLUMN ticket_no VARCHAR(20) NULL`,
 ];
 
 /** Create all tables + apply column migrations. Idempotent; safe to call on every boot. */
