@@ -5,7 +5,7 @@ import { createTicket } from "@/lib/db/auth";
 import { sendMail } from "@/lib/mailer";
 
 export const runtime = "nodejs";
-const SUPPORT_TO = "info@lautzu.com";
+const SUPPORT_TO = "support@bokuzu.com";
 
 // Raise a support ticket from a single message. Stored in the DB, emailed to our inbox with a fixed
 // "Bokuzu client support ticket" subject (so we know it's from Bokuzu), and a confirmation with the
