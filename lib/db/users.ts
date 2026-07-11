@@ -80,6 +80,60 @@ export async function removeUser(id: string): Promise<void> {
   await q(`DELETE FROM portal_users WHERE id = :id`, { id });
 }
 
+// ── self-serve account setup (first sign-in) ──────────────────────────────────
+const RESERVED_SLUGS = ["login", "example", "admin", "api", "top", "portal"];
+
+function slugify(s: string): string {
+  const base = s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  return base || "client";
+}
+async function slugExists(slug: string): Promise<boolean> {
+  const r = await q<RowDataPacket[]>(`SELECT 1 AS x FROM clients WHERE slug = :s LIMIT 1`, { s: slug });
+  return r.length > 0;
+}
+async function uniqueSlug(base: string): Promise<string> {
+  let s = RESERVED_SLUGS.includes(base) ? `${base}-co` : base;
+  let n = 1;
+  while (await slugExists(s)) { n += 1; s = `${base}-${n}`.slice(0, 40); }
+  return s;
+}
+function currencyFor(country: string): string {
+  const c = country.toLowerCase();
+  if (/canada/.test(c)) return "CAD";
+  if (/united states|usa|america/.test(c)) return "USD";
+  if (/united kingdom|uk|britain|england/.test(c)) return "GBP";
+  if (/australia/.test(c)) return "AUD";
+  if (/india/.test(c)) return "INR";
+  if (/euro|germany|france|spain|italy|netherlands|ireland/.test(c)) return "EUR";
+  return "USD";
+}
+
+/** New user completes setup: create a pending company from their details and link them as owner. */
+export async function completeSetup(userId: string, input: { companyName: string; website?: string; country: string; phone?: string }): Promise<string> {
+  const user = await getUserById(userId);
+  if (!user) throw new Error("user not found");
+  if (user.client_id) return user.client_id; // already set up
+
+  const slug = await uniqueSlug(slugify(input.companyName));
+  const clientId = crypto.randomUUID();
+  await q(
+    `INSERT INTO clients (id, slug, brand, currency, status, website, country)
+     VALUES (:id, :slug, :brand, :cur, 'pending', :web, :country)`,
+    {
+      id: clientId,
+      slug,
+      brand: input.companyName.trim().slice(0, 160),
+      cur: currencyFor(input.country),
+      web: (input.website || "").trim().slice(0, 300) || null,
+      country: input.country.trim().slice(0, 80),
+    }
+  );
+  await q(`UPDATE portal_users SET client_id = :cid, role = 'owner', phone = :p WHERE id = :uid`, {
+    cid: clientId, p: (input.phone || "").trim() || null, uid: userId,
+  });
+  return clientId;
+}
+
 // ── client (company) ──────────────────────────────────────────────────────────
 export async function getClientPublic(clientId: string): Promise<ClientPublic | null> {
   const rows = await q<ClientPublic[]>(

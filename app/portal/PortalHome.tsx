@@ -16,6 +16,7 @@ export function PortalHome({ me, devices }: { me: Me; devices: Device[] }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("home");
   const [menu, setMenu] = useState(false);
+  const needsSetup = !me.linked;
 
   const signOut = async (forgetDevice: boolean) => {
     await fetch("/api/portal/logout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ forgetDevice }) });
@@ -37,19 +38,79 @@ export function PortalHome({ me, devices }: { me: Me; devices: Device[] }) {
             )}
           </div>
         </div>
-        <nav className="mx-auto flex max-w-shell gap-1 px-5 sm:px-8">
-          {(["home", "settings", "support"] as Tab[]).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={`border-b-2 px-3 py-2.5 text-sm capitalize transition-colors ${tab === t ? "border-lime text-bone" : "border-transparent text-ash hover:text-bone"}`}>{t}</button>
-          ))}
-        </nav>
+        {!needsSetup && (
+          <nav className="mx-auto flex max-w-shell gap-1 px-5 sm:px-8">
+            {(["home", "settings", "support"] as Tab[]).map((t) => (
+              <button key={t} onClick={() => setTab(t)} className={`border-b-2 px-3 py-2.5 text-sm capitalize transition-colors ${tab === t ? "border-lime text-bone" : "border-transparent text-ash hover:text-bone"}`}>{t}</button>
+            ))}
+          </nav>
+        )}
       </header>
 
       <main className="mx-auto max-w-shell px-5 py-10 sm:px-8">
-        {tab === "home" && <Home me={me} />}
-        {tab === "settings" && <Settings me={me} devices={devices} onChange={() => router.refresh()} />}
-        {tab === "support" && <Support />}
+        {needsSetup ? (
+          <AccountSetup onDone={() => router.refresh()} />
+        ) : (
+          <>
+            {tab === "home" && <Home me={me} />}
+            {tab === "settings" && <Settings me={me} devices={devices} onChange={() => router.refresh()} />}
+            {tab === "support" && <Support />}
+          </>
+        )}
       </main>
     </div>
+  );
+}
+
+const COUNTRIES = ["Canada", "United States", "United Kingdom", "Australia", "India", "Germany", "France", "Netherlands", "Ireland", "New Zealand", "United Arab Emirates", "Singapore"];
+
+function AccountSetup({ onDone }: { onDone: () => void }) {
+  const [companyName, setCompanyName] = useState("");
+  const [website, setWebsite] = useState("");
+  const [country, setCountry] = useState("");
+  const [phone, setPhone] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true); setErr("");
+    const r = await fetch("/api/portal/setup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ companyName, website, country, phone }) });
+    setBusy(false);
+    if (r.ok) onDone(); else setErr((await r.json()).error || "Could not save.");
+  };
+
+  return (
+    <div className="mx-auto max-w-lg py-6">
+      <p className="font-mono text-xs uppercase tracking-[0.16em] text-lime">Set up your account</p>
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight text-bone">Tell us about your company</h1>
+      <p className="mt-2 text-sm leading-relaxed text-ash">Just a few details so we can set up your portal and connect your ad accounts.</p>
+
+      <form onSubmit={submit} className="mt-7 space-y-4">
+        <Setup label="Company name" value={companyName} onChange={setCompanyName} placeholder="Acme Supplements" required />
+        <Setup label="Company website" value={website} onChange={setWebsite} placeholder="acme.com" />
+        <div>
+          <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-ash">Country</span>
+          <input list="bk-countries" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Canada" required className={setupInput} />
+          <datalist id="bk-countries">{COUNTRIES.map((c) => <option key={c} value={c} />)}</datalist>
+        </div>
+        <Setup label="Mobile number (optional)" value={phone} onChange={setPhone} placeholder="+1 555 000 1234" />
+        {err && <p className="font-mono text-[11px] text-bad">{err}</p>}
+        <button type="submit" disabled={busy || !companyName.trim() || !country.trim()} className="w-full rounded-full bg-lime px-6 py-3 text-sm font-semibold text-ink shadow-glow transition-transform hover:bg-lime-press active:scale-[0.98] disabled:opacity-40">
+          {busy ? "Saving…" : "Continue"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+const setupInput = "w-full rounded-xl border border-plum-line bg-ink px-4 py-3 text-sm text-bone placeholder:text-ash/60 focus:border-lime";
+function Setup({ label, value, onChange, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-ash">{label}</span>
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className={setupInput} />
+    </label>
   );
 }
 
