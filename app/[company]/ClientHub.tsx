@@ -11,7 +11,7 @@ interface Me {
 interface Device { id: string; label: string | null; lastSeen: string; current: boolean }
 type Tab = "dashboard" | "support" | "settings";
 
-export function ClientHub({ me, devices }: { me: Me; devices: Device[] }) {
+export function ClientHub({ me, devices, smsAvailable }: { me: Me; devices: Device[]; smsAvailable: boolean }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [menu, setMenu] = useState(false);
@@ -57,7 +57,7 @@ export function ClientHub({ me, devices }: { me: Me; devices: Device[] }) {
       <main className="mx-auto max-w-shell px-5 py-8 sm:px-8">
         {tab === "dashboard" && <Dashboard me={me} />}
         {tab === "support" && <Support />}
-        {tab === "settings" && <Settings me={me} devices={devices} onChange={() => router.refresh()} />}
+        {tab === "settings" && <Settings me={me} devices={devices} smsAvailable={smsAvailable} onChange={() => router.refresh()} />}
       </main>
     </div>
   );
@@ -140,7 +140,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   return <section className="rounded-2xl border border-plum-line bg-plum-raise p-6"><h2 className="mb-4 text-sm font-semibold text-bone">{title}</h2>{children}</section>;
 }
 
-function Settings({ me, devices, onChange }: { me: Me; devices: Device[]; onChange: () => void }) {
+function Settings({ me, devices, smsAvailable, onChange }: { me: Me; devices: Device[]; smsAvailable: boolean; onChange: () => void }) {
   const [phone, setPhone] = useState(me.phone || "");
   const [sms, setSms] = useState(me.smsCodes);
   const [msg, setMsg] = useState("");
@@ -160,18 +160,20 @@ function Settings({ me, devices, onChange }: { me: Me; devices: Device[]; onChan
 
       <Authenticator enabled={me.authenticator} onChange={onChange} />
 
-      <Card title="Login codes">
-        <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-ash">Mobile number (for SMS codes)</span>
-        <div className="flex gap-2">
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 000 1234" className={input} />
-          <button onClick={savePhone} className="shrink-0 rounded-full border border-plum-line px-4 text-sm text-bone hover:border-lime hover:bg-lime hover:text-ink">Save</button>
-        </div>
-        <button onClick={toggleSms} disabled={!me.phone} className="mt-4 flex w-full items-center justify-between rounded-xl border border-plum-line bg-plum px-4 py-3 text-left disabled:opacity-50">
-          <span><span className="block text-sm text-bone">Text my code to my mobile</span><span className="block font-mono text-[11px] text-ash">{me.phone ? "A code is texted alongside email." : "Add a mobile number first."}</span></span>
-          <Switch on={sms} />
-        </button>
-        {msg && <p className="mt-3 font-mono text-[11px] text-ok">{msg}</p>}
-      </Card>
+      {smsAvailable && (
+        <Card title="Login codes">
+          <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-ash">Mobile number (for SMS codes)</span>
+          <div className="flex gap-2">
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 000 1234" className={input} />
+            <button onClick={savePhone} className="shrink-0 rounded-full border border-plum-line px-4 text-sm text-bone hover:border-lime hover:bg-lime hover:text-ink">Save</button>
+          </div>
+          <button onClick={toggleSms} disabled={!me.phone} className="mt-4 flex w-full items-center justify-between rounded-xl border border-plum-line bg-plum px-4 py-3 text-left disabled:opacity-50">
+            <span><span className="block text-sm text-bone">Text my code to my mobile</span><span className="block font-mono text-[11px] text-ash">{me.phone ? "A code is texted alongside email." : "Add a mobile number first."}</span></span>
+            <Switch on={sms} />
+          </button>
+          {msg && <p className="mt-3 font-mono text-[11px] text-ok">{msg}</p>}
+        </Card>
+      )}
 
       <Card title="Devices signed in">
         {devices.length === 0 ? <p className="font-mono text-[11px] text-ash">No remembered devices.</p> : (

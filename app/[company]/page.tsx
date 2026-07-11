@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { dbConfigured } from "@/lib/db/pool";
+import { smsConfigured } from "@/lib/sms";
 import { currentContext, currentDeviceId } from "@/lib/portalCurrent";
 import { listUserDevices } from "@/lib/db/users";
 import { ClientHub } from "./ClientHub";
@@ -39,6 +40,7 @@ export default async function CompanyPortal({ params }: { params: Promise<{ comp
         agencyOnboarded: ctx.client.agency_onboarded,
       }}
       devices={devices}
+      smsAvailable={smsConfigured()}
     />
   );
 }
