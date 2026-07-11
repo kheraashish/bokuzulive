@@ -19,7 +19,7 @@ export async function GET() {
       currency: c.currency,
       login_email: c.login_email,
       status: c.status,
-      connections: (await getConnections(c.id)).map((x) => ({ platform: x.platform, status: x.status, account_name: x.account_name })),
+      connections: (await getConnections(c.id)).map((x) => ({ platform: x.platform, status: x.status, accountId: x.external_account_id })),
     }))
   );
   return NextResponse.json({ clients: withConns });

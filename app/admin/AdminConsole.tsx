@@ -11,19 +11,24 @@ export interface ClientView {
   currency: string;
   loginEmail: string | null;
   status: string;
-  connections: { platform: string; status: string }[];
+  connections: { platform: string; status: string; accountId: string | null }[];
+}
+
+interface Agency {
+  googleAppReady: boolean; // Google OAuth app credentials present in env
+  metaAppReady: boolean; // Meta app credentials present in env
+  googleConnected: boolean; // agency MCC refresh token stored
+  metaConnected: boolean; // agency Meta system-user token stored
 }
 
 export function AdminConsole({
   initialClients,
   dbOn,
-  googleReady,
-  metaReady,
+  agency,
 }: {
   initialClients: ClientView[];
   dbOn: boolean;
-  googleReady: boolean;
-  metaReady: boolean;
+  agency: Agency;
 }) {
   const router = useRouter();
   const [brand, setBrand] = useState("");
@@ -76,9 +81,12 @@ export function AdminConsole({
 
       {!dbOn && (
         <div className="mb-6 rounded-xl border border-warn/40 bg-plum px-4 py-3 font-mono text-[11px] text-warn">
-          Database not configured (DB_HOST/DB_NAME/DB_USER/DB_PASSWORD). Set them to enable onboarding.
+          Database not configured. Set DB_HOST/DB_NAME/DB_USER/DB_PASSWORD to enable onboarding.
         </div>
       )}
+
+      {/* Agency setup (one time) */}
+      <AgencySetup agency={agency} />
 
       {/* Add client */}
       <section className="mb-10 rounded-2xl border border-plum-line bg-plum-raise p-6">
@@ -105,17 +113,17 @@ export function AdminConsole({
         ) : (
           <div className="space-y-3">
             {initialClients.map((c) => (
-              <div key={c.id} className="flex flex-col gap-4 rounded-2xl border border-plum-line bg-plum p-5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
+              <div key={c.id} className="rounded-2xl border border-plum-line bg-plum p-5">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-bone">{c.brand}</span>
                     <Link href={`/${c.slug}`} className="font-mono text-[11px] text-lime hover:underline">bokuzu.com/{c.slug}</Link>
                   </div>
-                  <p className="mt-0.5 font-mono text-[11px] text-ash">{c.loginEmail || "no login email set"}</p>
+                  <span className="font-mono text-[11px] text-ash">{c.loginEmail || "no login email"}</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <ConnectButton clientId={c.id} platform="google" label="Google Ads" ready={googleReady} status={statusOf(c, "google")} />
-                  <ConnectButton clientId={c.id} platform="meta" label="Meta" ready={metaReady} status={statusOf(c, "meta")} />
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <AccountField clientId={c.id} platform="google" label="Google Customer ID" placeholder="123-456-7890" current={accountOf(c, "google")} onSaved={() => router.refresh()} />
+                  <AccountField clientId={c.id} platform="meta" label="Meta Ad Account ID" placeholder="act_1234567890" current={accountOf(c, "meta")} onSaved={() => router.refresh()} />
                 </div>
               </div>
             ))}
@@ -126,22 +134,137 @@ export function AdminConsole({
   );
 }
 
-function statusOf(c: ClientView, platform: string): string {
-  return c.connections.find((x) => x.platform === platform)?.status || "not connected";
+function accountOf(c: ClientView, platform: string): string {
+  return c.connections.find((x) => x.platform === platform)?.accountId || "";
 }
 
-function ConnectButton({ clientId, platform, label, ready, status }: { clientId: string; platform: string; label: string; ready: boolean; status: string }) {
-  const connected = status === "connected";
-  if (connected) {
-    return <span className="inline-flex items-center gap-1.5 rounded-full border border-ok/40 px-3 py-1.5 font-mono text-[11px] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" /> {label} connected</span>;
-  }
-  if (!ready) {
-    return <span className="rounded-full border border-plum-line px-3 py-1.5 font-mono text-[11px] text-ash" title={`Set up the ${label} app first`}>{label}: app not set up</span>;
-  }
+function AgencySetup({ agency }: { agency: Agency }) {
+  const router = useRouter();
+  const [metaToken, setMetaToken] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const saveMeta = async () => {
+    setBusy(true);
+    await fetch("/api/admin/settings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ key: "meta_system_token", value: metaToken }),
+    });
+    setBusy(false);
+    setMetaToken("");
+    router.refresh();
+  };
+
   return (
-    <a href={`/api/connect/${platform}/start?client=${clientId}`} className="rounded-full bg-lime px-3.5 py-1.5 font-mono text-[11px] font-semibold text-ink hover:bg-lime-press active:scale-[0.98]">
-      Connect {label}
-    </a>
+    <section className="mb-8 rounded-2xl border border-plum-line bg-plum p-6">
+      <h2 className="mb-1 text-sm font-semibold text-bone">Agency setup (one time)</h2>
+      <p className="mb-4 font-mono text-[11px] text-ash">Your manager credentials that read every client&apos;s data. Done once.</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Google MCC */}
+        <div className="rounded-xl border border-plum-line bg-plum-raise p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-bone">Google Ads (MCC)</span>
+            <StatusPill ok={agency.googleConnected} />
+          </div>
+          <p className="mt-2 font-mono text-[11px] text-ash">Authorize your Google Manager account once.</p>
+          {agency.googleAppReady ? (
+            <a href="/api/connect/google/start?agency=1" className="mt-3 inline-block rounded-full bg-lime px-4 py-2 font-mono text-[11px] font-semibold text-ink hover:bg-lime-press">
+              {agency.googleConnected ? "Re-connect Google" : "Connect Google MCC"}
+            </a>
+          ) : (
+            <p className="mt-3 font-mono text-[11px] text-warn">Add GOOGLE_OAUTH_CLIENT_ID + secret + dev token to enable.</p>
+          )}
+        </div>
+
+        {/* Meta system user */}
+        <div className="rounded-xl border border-plum-line bg-plum-raise p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-bone">Meta (System user)</span>
+            <StatusPill ok={agency.metaConnected} />
+          </div>
+          <p className="mt-2 font-mono text-[11px] text-ash">Paste the long-lived system-user token from your Business Manager.</p>
+          <div className="mt-3 flex gap-2">
+            <input
+              type="password"
+              value={metaToken}
+              onChange={(e) => setMetaToken(e.target.value)}
+              placeholder={agency.metaConnected ? "•••••• (stored) — paste to replace" : "EAAB… system-user token"}
+              className="min-w-0 flex-1 rounded-lg border border-plum-line bg-ink px-3 py-2 font-mono text-[11px] text-bone placeholder:text-ash/60 focus:border-lime"
+            />
+            <button onClick={saveMeta} disabled={busy || !metaToken} className="shrink-0 rounded-full bg-lime px-4 py-2 font-mono text-[11px] font-semibold text-ink hover:bg-lime-press disabled:opacity-40">
+              {busy ? "…" : "Save"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatusPill({ ok }: { ok: boolean }) {
+  return ok ? (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-ok/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ok"><span className="h-1.5 w-1.5 rounded-full bg-ok" /> connected</span>
+  ) : (
+    <span className="rounded-full border border-plum-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ash">not set</span>
+  );
+}
+
+function AccountField({
+  clientId,
+  platform,
+  label,
+  placeholder,
+  current,
+  onSaved,
+}: {
+  clientId: string;
+  platform: "google" | "meta";
+  label: string;
+  placeholder: string;
+  current: string;
+  onSaved: () => void;
+}) {
+  const [value, setValue] = useState(current);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const dirty = value.trim() !== current;
+
+  const save = async () => {
+    setBusy(true);
+    setErr("");
+    const res = await fetch("/api/admin/connect", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ clientId, platform, accountId: value }),
+    });
+    setBusy(false);
+    if (res.ok) onSaved();
+    else setErr((await res.json().catch(() => ({}))).error || "failed");
+  };
+
+  return (
+    <div className="rounded-xl border border-plum-line bg-plum-raise p-3">
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ash">{label}</span>
+        {current ? (
+          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ok">linked</span>
+        ) : (
+          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ash">not linked</span>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          className="min-w-0 flex-1 rounded-lg border border-plum-line bg-ink px-3 py-2 font-mono text-[11px] text-bone placeholder:text-ash/60 focus:border-lime"
+        />
+        <button onClick={save} disabled={busy || !dirty} className="shrink-0 rounded-full border border-plum-line px-3 py-2 font-mono text-[11px] text-bone hover:border-lime hover:bg-lime hover:text-ink disabled:opacity-40">
+          {busy ? "…" : "Save"}
+        </button>
+      </div>
+      {err && <p className="mt-1 font-mono text-[10px] text-bad">{err}</p>}
+    </div>
   );
 }
 

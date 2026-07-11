@@ -95,3 +95,12 @@ CREATE TABLE IF NOT EXISTS login_codes (
   created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Agency-level settings (encrypted values): the one-time manager credentials that read every
+-- client's data, e.g. google_refresh_token, meta_system_token.
+CREATE TABLE IF NOT EXISTS settings (
+  k           VARCHAR(80) NOT NULL,
+  v_enc       TEXT        NULL,
+  updated_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (k)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -87,6 +87,11 @@ const DDL: string[] = [
      email VARCHAR(200) NOT NULL, code_hash VARCHAR(120) NOT NULL, expires_at DATETIME NOT NULL,
      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (email)
    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS settings (
+     k VARCHAR(80) NOT NULL, v_enc TEXT NULL,
+     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (k)
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
 /** Create all tables if they do not exist. Idempotent; safe to call on every boot. */

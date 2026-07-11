@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { isOperator, operatorConfigured } from "@/lib/adminAuth";
 import { dbConfigured } from "@/lib/db/pool";
 import { listClients, getConnections } from "@/lib/db/clients";
+import { hasSetting } from "@/lib/db/settings";
 import { AdminConsole, type ClientView } from "./AdminConsole";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,8 @@ export default async function AdminPage() {
 
   const dbOn = dbConfigured();
   let clients: ClientView[] = [];
+  let agencyGoogle = false;
+  let agencyMeta = false;
   if (dbOn) {
     const rows = await listClients();
     clients = await Promise.all(
@@ -34,17 +37,27 @@ export default async function AdminPage() {
         currency: c.currency,
         loginEmail: c.login_email,
         status: c.status,
-        connections: (await getConnections(c.id)).map((x) => ({ platform: x.platform, status: x.status })),
+        connections: (await getConnections(c.id)).map((x) => ({
+          platform: x.platform,
+          status: x.status,
+          accountId: x.external_account_id,
+        })),
       }))
     );
+    agencyGoogle = await hasSetting("google_refresh_token");
+    agencyMeta = await hasSetting("meta_system_token");
   }
 
   return (
     <AdminConsole
       initialClients={clients}
       dbOn={dbOn}
-      googleReady={Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID)}
-      metaReady={Boolean(process.env.META_APP_ID)}
+      agency={{
+        googleAppReady: Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID),
+        metaAppReady: Boolean(process.env.META_APP_ID),
+        googleConnected: agencyGoogle,
+        metaConnected: agencyMeta,
+      }}
     />
   );
 }
