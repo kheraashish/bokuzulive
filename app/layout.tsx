@@ -92,9 +92,21 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <div className="flex-1">{children}</div>
         <footer className="border-t border-plum-line/60 px-5 py-5 text-center">
-          <a href="mailto:support@bokuzu.com" className="font-mono text-[11px] text-ash transition-colors hover:text-bone">
-            support@bokuzu.com
-          </a>
+          <p className="font-mono text-[11px] leading-relaxed text-ash">
+            <a href="mailto:support@bokuzu.com" className="transition-colors hover:text-bone">
+              support@bokuzu.com
+            </a>
+            <span className="mx-2.5 text-plum-line">·</span>
+            Our marketing agency{" "}
+            <a
+              href="https://lautzu.com"
+              target="_blank"
+              rel="noopener"
+              className="text-bone transition-colors hover:text-lime"
+            >
+              lautzu.com
+            </a>
+          </p>
         </footer>
       </body>
     </html>
