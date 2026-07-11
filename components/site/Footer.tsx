@@ -2,7 +2,7 @@ import { SectionShell } from "./ui";
 
 export function Footer() {
   return (
-    <footer className="border-t border-plum-line/70 py-14">
+    <footer className="border-t border-lime/40 py-14">
       <SectionShell>
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">

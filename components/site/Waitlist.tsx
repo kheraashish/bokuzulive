@@ -61,7 +61,7 @@ export function Waitlist() {
 
   return (
     <>
-      <SectionShell id="waitlist" className="py-14 sm:py-20 lg:py-32">
+      <SectionShell id="waitlist" className="py-14 sm:py-16 lg:py-20">
         <div className="relative overflow-hidden rounded-2xl border border-plum-line bg-plum-raise p-8 sm:p-12 lg:p-16">
           <div className="relative max-w-2xl">
             <p className="kicker">Early access</p>

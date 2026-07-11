@@ -38,14 +38,14 @@ export function Hero() {
         <div className="mt-6 hidden w-full max-w-6xl lg:block" aria-hidden>
           <svg viewBox="0 0 1152 40" className="h-9 w-full" fill="none" preserveAspectRatio="xMidYMid meet">
             {[
-              "M576 3 L150 36",
-              "M576 3 L1002 36",
-              "M143 29 L150 37 L157 29",
-              "M995 29 L1002 37 L1009 29",
-            ].map((d, i) => (
+              { d: "M576 3 L150 36", kind: "line" },
+              { d: "M576 3 L1002 36", kind: "line" },
+              { d: "M143 29 L150 37 L157 29", kind: "cap" },
+              { d: "M995 29 L1002 37 L1009 29", kind: "cap" },
+            ].map((c, i) => (
               <path
                 key={i}
-                d={d}
+                d={c.d}
                 pathLength={1}
                 strokeDasharray={1}
                 strokeWidth={1.75}
@@ -53,7 +53,12 @@ export function Hero() {
                 strokeLinejoin="round"
                 vectorEffect="non-scaling-stroke"
                 className="animate-draw stroke-lime [filter:drop-shadow(0_0_3px_theme(colors.lime.DEFAULT/45%))]"
-                style={{ animationDelay: `${640 + i * 40}ms` }}
+                style={{
+                  // Both lines grow from the centre outward together; the two arrow-heads snap in
+                  // right as the lines reach the cards.
+                  animationDelay: c.kind === "line" ? "500ms" : "1150ms",
+                  animationDuration: c.kind === "line" ? "650ms" : "220ms",
+                }}
               />
             ))}
           </svg>
