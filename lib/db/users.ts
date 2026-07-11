@@ -209,6 +209,9 @@ export async function listUserDevices(userId: string): Promise<UserDeviceRow[]> 
 export async function removeUserDevice(userId: string, id: string): Promise<void> {
   await q(`DELETE FROM user_devices WHERE user_id = :u AND id = :id`, { u: userId, id });
 }
+export async function renameUserDevice(userId: string, id: string, label: string): Promise<void> {
+  await q(`UPDATE user_devices SET label = :l WHERE user_id = :u AND id = :id`, { l: label.slice(0, 120) || null, u: userId, id });
+}
 export async function removeUserDeviceByDeviceId(userId: string, deviceId: string): Promise<void> {
   await q(`DELETE FROM user_devices WHERE user_id = :u AND device_id = :d`, { u: userId, d: deviceId });
 }

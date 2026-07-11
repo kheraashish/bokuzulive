@@ -77,6 +77,8 @@
     font-family: theme("fontFamily.sans");
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* prevent any accidental horizontal scroll on mobile without breaking sticky headers */
+    overflow-x: clip;
     /* faint plum vignette so the flat dark reads as warm, not black */
     background-image: radial-gradient(
         1100px 620px at 78% -8%,

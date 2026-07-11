@@ -38,7 +38,7 @@ export function ClientHub({ me, devices, smsAvailable }: { me: Me; devices: Devi
             </div>
           </div>
           <div className="relative">
-            <button onClick={() => setMenu((v) => !v)} className="rounded-full border border-plum-line px-3.5 py-1.5 text-xs font-medium text-bone hover:border-ash hover:bg-plum-raise">{me.email}</button>
+            <button onClick={() => setMenu((v) => !v)} className="max-w-[45vw] truncate rounded-full border border-plum-line px-3.5 py-1.5 text-xs font-medium text-bone hover:border-ash hover:bg-plum-raise sm:max-w-[240px]">{me.email}</button>
             {menu && (
               <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-plum-line bg-plum p-3 shadow-lift">
                 <button onClick={() => signOut(false)} className="w-full rounded-lg px-3 py-2 text-left text-sm text-bone hover:bg-plum-raise">Sign out (keep this device)</button>
@@ -148,7 +148,6 @@ function Settings({ me, devices, smsAvailable, onChange }: { me: Me; devices: De
   const acct = (action: string, body: object) => fetch("/api/portal/account", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action, ...body }) });
   const savePhone = async () => { const r = await acct("phone", { phone }); setMsg(r.ok ? "Mobile number saved." : (await r.json()).error || "Failed."); if (r.ok) onChange(); };
   const toggleSms = async () => { const nv = !sms; setSms(nv); const r = await acct("smsCodes", { smsCodes: nv }); if (!r.ok) { setSms(!nv); setMsg((await r.json()).error || "Failed."); } };
-  const removeDevice = async (id: string) => { await fetch("/api/portal/devices", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ id }) }); onChange(); };
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -178,15 +177,10 @@ function Settings({ me, devices, smsAvailable, onChange }: { me: Me; devices: De
       <Card title="Devices signed in">
         {devices.length === 0 ? <p className="font-mono text-[11px] text-ash">No remembered devices.</p> : (
           <ul className="divide-y divide-plum-line/70">
-            {devices.map((d) => (
-              <li key={d.id} className="flex items-center justify-between py-3">
-                <div><p className="text-sm text-bone">{d.label || "Device"} {d.current && <span className="font-mono text-[10px] text-lime">· this device</span>}</p><p className="font-mono text-[11px] text-ash">last active {new Date(d.lastSeen).toLocaleDateString()}</p></div>
-                <button onClick={() => removeDevice(d.id)} className="rounded-full border border-plum-line px-3 py-1.5 font-mono text-[11px] text-bad hover:border-bad">Remove</button>
-              </li>
-            ))}
+            {devices.map((d) => <DeviceRow key={d.id} d={d} onChange={onChange} />)}
           </ul>
         )}
-        <p className="mt-3 font-mono text-[11px] text-ash">Remembered devices skip the code for up to 30 days, then a code is required again.</p>
+        <p className="mt-3 font-mono text-[11px] text-ash">Name a device (e.g. My home laptop) so you recognise it. Remembered devices skip the code for up to 30 days.</p>
       </Card>
     </div>
   );
@@ -247,6 +241,36 @@ function Authenticator({ enabled, onChange }: { enabled: boolean; onChange: () =
         </div>
       )}
     </Card>
+  );
+}
+
+function DeviceRow({ d, onChange }: { d: Device; onChange: () => void }) {
+  const [label, setLabel] = useState(d.label || "");
+  const [busy, setBusy] = useState(false);
+  const dirty = label.trim() !== (d.label || "");
+
+  const save = async () => {
+    setBusy(true);
+    await fetch("/api/portal/devices", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: d.id, label }) });
+    setBusy(false);
+    onChange();
+  };
+  const remove = async () => {
+    await fetch("/api/portal/devices", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: d.id }) });
+    onChange();
+  };
+
+  return (
+    <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="flex gap-2">
+          <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Name this device" className={`${input} min-w-0`} />
+          <button onClick={save} disabled={busy || !dirty} className="shrink-0 rounded-full border border-plum-line px-3 text-sm text-bone hover:border-lime hover:bg-lime hover:text-ink disabled:opacity-40">Save</button>
+        </div>
+        <p className="mt-1 font-mono text-[11px] text-ash">{d.current && <span className="text-lime">this device · </span>}last active {new Date(d.lastSeen).toLocaleDateString()}</p>
+      </div>
+      <button onClick={remove} className="shrink-0 self-start rounded-full border border-plum-line px-3 py-1.5 font-mono text-[11px] text-bad hover:border-bad sm:self-auto">Remove</button>
+    </li>
   );
 }
 
