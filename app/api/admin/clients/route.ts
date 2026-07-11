@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isOperator } from "@/lib/adminAuth";
 import { dbConfigured } from "@/lib/db/pool";
 import { createClient, listClients, getConnections } from "@/lib/db/clients";
-import { addUserToClient, listUsersForClient } from "@/lib/db/users";
+import { addUserToClient, listUsersForClient, setAgencyOnboarded } from "@/lib/db/users";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +40,7 @@ export async function POST(req: Request) {
 
   try {
     const id = await createClient({ slug, brand, currency: body.currency, loginEmail: body.loginEmail || null });
+    await setAgencyOnboarded(id, "yes"); // operator-managed = already an agency client
     // The owner email becomes the first portal user for this company.
     const owner = (body.loginEmail || "").trim();
     if (owner) await addUserToClient(id, owner, "owner");

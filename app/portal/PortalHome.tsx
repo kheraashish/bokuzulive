@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 interface Me {
   email: string; name: string | null; phone: string | null; smsCodes: boolean;
   brand: string | null; slug: string | null; logoUrl: string | null; linked: boolean; live: boolean;
+  agencyOnboarded: string | null; // 'yes' | 'no' | null (not answered)
 }
 interface Device { id: string; label: string | null; lastSeen: string; current: boolean }
 type Tab = "home" | "settings" | "support";
@@ -17,6 +18,8 @@ export function PortalHome({ me, devices }: { me: Me; devices: Device[] }) {
   const [tab, setTab] = useState<Tab>("home");
   const [menu, setMenu] = useState(false);
   const needsSetup = !me.linked;
+  const needsAgencyQ = me.linked && !me.agencyOnboarded;
+  const showTabs = !needsSetup && !needsAgencyQ;
 
   const signOut = async (forgetDevice: boolean) => {
     await fetch("/api/portal/logout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ forgetDevice }) });
@@ -38,7 +41,7 @@ export function PortalHome({ me, devices }: { me: Me; devices: Device[] }) {
             )}
           </div>
         </div>
-        {!needsSetup && (
+        {showTabs && (
           <nav className="mx-auto flex max-w-shell gap-1 px-5 sm:px-8">
             {(["home", "settings", "support"] as Tab[]).map((t) => (
               <button key={t} onClick={() => setTab(t)} className={`border-b-2 px-3 py-2.5 text-sm capitalize transition-colors ${tab === t ? "border-lime text-bone" : "border-transparent text-ash hover:text-bone"}`}>{t}</button>
@@ -50,6 +53,8 @@ export function PortalHome({ me, devices }: { me: Me; devices: Device[] }) {
       <main className="mx-auto max-w-shell px-5 py-10 sm:px-8">
         {needsSetup ? (
           <AccountSetup onDone={() => router.refresh()} />
+        ) : needsAgencyQ ? (
+          <AgencyQuestion onDone={() => router.refresh()} />
         ) : (
           <>
             {tab === "home" && <Home me={me} />}
@@ -58,6 +63,26 @@ export function PortalHome({ me, devices }: { me: Me; devices: Device[] }) {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+function AgencyQuestion({ onDone }: { onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const answer = async (onboarded: "yes" | "no") => {
+    setBusy(true);
+    await fetch("/api/portal/agency", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ onboarded }) });
+    onDone();
+  };
+  return (
+    <div className="mx-auto max-w-lg py-16 text-center">
+      <p className="font-mono text-xs uppercase tracking-[0.16em] text-lime">One quick question</p>
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight text-bone sm:text-3xl">Have you onboarded with the Lautzu agency?</h1>
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ash">This helps us connect your ad accounts and set up your portal correctly.</p>
+      <div className="mt-8 flex justify-center gap-3">
+        <button onClick={() => answer("yes")} disabled={busy} className="rounded-full bg-lime px-10 py-3.5 text-sm font-semibold text-ink shadow-glow transition-transform hover:bg-lime-press active:scale-[0.98] disabled:opacity-40">Yes</button>
+        <button onClick={() => answer("no")} disabled={busy} className="rounded-full border border-plum-line px-10 py-3.5 text-sm font-semibold text-bone transition-colors hover:border-lime hover:bg-lime hover:text-ink active:scale-[0.98] disabled:opacity-40">No</button>
+      </div>
     </div>
   );
 }

@@ -22,6 +22,7 @@ export interface ClientPublic extends RowDataPacket {
   brand: string;
   logo_url: string | null;
   currency: string;
+  agency_onboarded: string | null; // 'yes' | 'no' | null (not answered yet)
 }
 
 const norm = (s: string) => s.trim().toLowerCase();
@@ -137,13 +138,16 @@ export async function completeSetup(userId: string, input: { companyName: string
 // ── client (company) ──────────────────────────────────────────────────────────
 export async function getClientPublic(clientId: string): Promise<ClientPublic | null> {
   const rows = await q<ClientPublic[]>(
-    `SELECT id, slug, brand, logo_url, currency FROM clients WHERE id = :id LIMIT 1`,
+    `SELECT id, slug, brand, logo_url, currency, agency_onboarded FROM clients WHERE id = :id LIMIT 1`,
     { id: clientId }
   );
   return rows[0] ?? null;
 }
 export async function setClientLogo(clientId: string, url: string | null): Promise<void> {
   await q(`UPDATE clients SET logo_url = :u WHERE id = :id`, { u: url, id: clientId });
+}
+export async function setAgencyOnboarded(clientId: string, value: "yes" | "no"): Promise<void> {
+  await q(`UPDATE clients SET agency_onboarded = :v WHERE id = :id`, { v: value, id: clientId });
 }
 
 /** "Portal live" = the client has at least one ad account linked (an account ID set). */

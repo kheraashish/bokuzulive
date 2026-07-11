@@ -31,6 +31,7 @@ export default async function PortalPage() {
         logoUrl: ctx.client?.logo_url ?? null,
         linked: Boolean(ctx.client),
         live: ctx.live,
+        agencyOnboarded: ctx.client?.agency_onboarded ?? null,
       }}
       devices={devices}
     />

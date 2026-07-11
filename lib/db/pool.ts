@@ -132,6 +132,7 @@ const ALTERS: string[] = [
   `ALTER TABLE clients ADD COLUMN logo_url VARCHAR(500) NULL`,
   `ALTER TABLE clients ADD COLUMN website VARCHAR(300) NULL`,
   `ALTER TABLE clients ADD COLUMN country VARCHAR(80) NULL`,
+  `ALTER TABLE clients ADD COLUMN agency_onboarded VARCHAR(10) NULL`,
   `ALTER TABLE portal_users ADD COLUMN phone VARCHAR(40) NULL`,
   `ALTER TABLE portal_users ADD COLUMN twofa_sms TINYINT(1) NOT NULL DEFAULT 0`,
 ];
