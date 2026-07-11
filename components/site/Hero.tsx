@@ -12,7 +12,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-5 pb-16 pt-10 sm:px-8 lg:pt-12"
+      className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-5 pb-10 pt-10 sm:px-8 sm:pb-16 lg:pt-12"
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center text-center">
         {/* badge */}

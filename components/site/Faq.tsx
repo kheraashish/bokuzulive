@@ -11,7 +11,7 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <SectionShell id="faq" className="py-24 lg:py-32">
+    <SectionShell id="faq" className="py-14 sm:py-20 lg:py-32">
       <p className="kicker">Common questions</p>
       <h2 className="display-lg mt-4 text-bone">Questions, answered honestly.</h2>
 

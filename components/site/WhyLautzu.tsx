@@ -5,7 +5,7 @@ import { SectionShell } from "./ui";
 // association. Freshness language is the approved "the moment Google and Meta refresh" phrasing.
 export function WhyLautzu() {
   return (
-    <div id="why-lautzu" className="border-t border-plum-line/70 bg-plum/30 py-24 lg:py-32">
+    <div id="why-lautzu" className="border-t border-plum-line/70 bg-plum/30 py-14 sm:py-20 lg:py-32">
       <SectionShell className="max-w-3xl">
         <p className="kicker">Built for our own agency first</p>
         <h2 className="display-lg mt-4 text-bone">Why Lautzu runs on Bokuzu.</h2>

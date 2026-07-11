@@ -2,7 +2,7 @@ import { SectionShell } from "./ui";
 
 export function Pov() {
   return (
-    <SectionShell className="py-24 lg:py-32">
+    <SectionShell className="py-14 sm:py-20 lg:py-32">
       <p className="kicker">Built for our own agency first — the outreach engine</p>
       <p className="mt-4 max-w-prose text-lg leading-relaxed text-ash">
         Bokuzu also runs Lautzu&apos;s own client acquisition. Same honesty, pointed outward.

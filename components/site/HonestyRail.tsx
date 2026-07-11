@@ -2,7 +2,7 @@ import { SectionShell, Band, Chip, Dot } from "./ui";
 
 export function HonestyRail() {
   return (
-    <SectionShell id="honesty" className="py-24 lg:py-32">
+    <SectionShell id="honesty" className="py-14 sm:py-20 lg:py-32">
       <div className="max-w-prose">
         <p className="kicker">The honesty rail</p>
         <h2 className="display-lg mt-4 text-bone">
