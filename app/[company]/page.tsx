@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation";
 import { dbConfigured } from "@/lib/db/pool";
-import { currentClient, currentDeviceId } from "@/lib/portalCurrent";
-import { listDevices } from "@/lib/db/auth";
-import { getConnections } from "@/lib/db/clients";
-import { ClientPortal } from "./ClientPortal";
+import { currentContext } from "@/lib/portalCurrent";
+import { DashboardShell } from "./DashboardShell";
 
-// Real client portal at bokuzu.com/<company>. Access comes from the signed session, never the slug.
-// Logged out -> login. Logged in as another company -> your own portal.
+// The client's live dashboard at bokuzu.com/<company>. Access = signed-in user linked to this
+// company, and the company is live (an ad account is connected). Otherwise back to /portal.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -15,30 +13,10 @@ export default async function CompanyPortal({ params }: { params: Promise<{ comp
   const slug = decodeURIComponent(company || "").toLowerCase();
 
   if (!dbConfigured()) redirect("/login");
-  const client = await currentClient();
-  if (!client) redirect(`/login?next=${encodeURIComponent(slug)}`);
-  if (client.slug !== slug) redirect(`/${client.slug}`);
+  const ctx = await currentContext();
+  if (!ctx) redirect(`/login`);
+  if (!ctx.client || ctx.client.slug !== slug) redirect("/portal");
+  if (!ctx.live) redirect("/portal"); // not connected yet -> welcome/wait screen
 
-  const thisDevice = await currentDeviceId();
-  const devices = (await listDevices(client.id)).map((d) => ({
-    id: d.id, label: d.label, userAgent: d.user_agent, lastSeen: String(d.last_seen_at), current: d.device_id === thisDevice,
-  }));
-  const connections = (await getConnections(client.id)).map((c) => ({
-    platform: c.platform, status: c.status, accountId: c.external_account_id,
-  }));
-
-  return (
-    <ClientPortal
-      profile={{
-        brand: client.brand,
-        slug: client.slug,
-        email: client.login_email,
-        phone: client.phone,
-        twofaEmail: client.twofa_email === 1,
-        twofaSms: client.twofa_sms === 1,
-      }}
-      devices={devices}
-      connections={connections}
-    />
-  );
+  return <DashboardShell brand={ctx.client.brand} logoUrl={ctx.client.logo_url} email={ctx.user.email} />;
 }

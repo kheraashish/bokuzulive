@@ -11,7 +11,9 @@ export interface ClientView {
   currency: string;
   loginEmail: string | null;
   status: string;
+  logoUrl: string | null;
   connections: { platform: string; status: string; accountId: string | null }[];
+  users: { id: string; email: string; role: string }[];
 }
 
 interface Agency {
@@ -124,6 +126,10 @@ export function AdminConsole({
                 <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <AccountField clientId={c.id} platform="google" label="Google Customer ID" placeholder="123-456-7890" current={accountOf(c, "google")} onSaved={() => router.refresh()} />
                   <AccountField clientId={c.id} platform="meta" label="Meta Ad Account ID" placeholder="act_1234567890" current={accountOf(c, "meta")} onSaved={() => router.refresh()} />
+                </div>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <UsersEditor clientId={c.id} users={c.users} onChange={() => router.refresh()} />
+                  <LogoField clientId={c.id} current={c.logoUrl || ""} onChange={() => router.refresh()} />
                 </div>
               </div>
             ))}
@@ -264,6 +270,57 @@ function AccountField({
         </button>
       </div>
       {err && <p className="mt-1 font-mono text-[10px] text-bad">{err}</p>}
+    </div>
+  );
+}
+
+function UsersEditor({ clientId, users, onChange }: { clientId: string; users: { id: string; email: string; role: string }[]; onChange: () => void }) {
+  const [email, setEmail] = useState("");
+  const add = async () => {
+    const r = await fetch("/api/admin/users", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ clientId, email, role: "member" }) });
+    if (r.ok) { setEmail(""); onChange(); }
+  };
+  const remove = async (userId: string) => {
+    await fetch("/api/admin/users", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ userId }) });
+    onChange();
+  };
+  return (
+    <div className="rounded-xl border border-plum-line bg-plum-raise p-3">
+      <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.1em] text-ash">Portal users (owner + members)</span>
+      <ul className="mb-2 space-y-1">
+        {users.map((u) => (
+          <li key={u.id} className="flex items-center justify-between gap-2 rounded-lg bg-plum px-2.5 py-1.5">
+            <span className="truncate font-mono text-[11px] text-bone">{u.email} <span className="text-ash">· {u.role}</span></span>
+            {u.role !== "owner" && <button onClick={() => remove(u.id)} className="shrink-0 font-mono text-[10px] text-bad hover:underline">remove</button>}
+          </li>
+        ))}
+        {users.length === 0 && <li className="font-mono text-[11px] text-ash">No users yet.</li>}
+      </ul>
+      <div className="flex gap-2">
+        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="add member email" className="min-w-0 flex-1 rounded-lg border border-plum-line bg-ink px-3 py-2 font-mono text-[11px] text-bone placeholder:text-ash/60 focus:border-lime" />
+        <button onClick={add} disabled={!email} className="shrink-0 rounded-full border border-plum-line px-3 py-2 font-mono text-[11px] text-bone hover:border-lime hover:bg-lime hover:text-ink disabled:opacity-40">Add</button>
+      </div>
+    </div>
+  );
+}
+
+function LogoField({ clientId, current, onChange }: { clientId: string; current: string; onChange: () => void }) {
+  const [url, setUrl] = useState(current);
+  const [err, setErr] = useState("");
+  const save = async () => {
+    setErr("");
+    const r = await fetch("/api/admin/logo", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ clientId, logoUrl: url }) });
+    if (r.ok) onChange(); else setErr((await r.json()).error || "failed");
+  };
+  return (
+    <div className="rounded-xl border border-plum-line bg-plum-raise p-3">
+      <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.1em] text-ash">White-label logo (image URL)</span>
+      <div className="flex gap-2">
+        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…/logo.png" className="min-w-0 flex-1 rounded-lg border border-plum-line bg-ink px-3 py-2 font-mono text-[11px] text-bone placeholder:text-ash/60 focus:border-lime" />
+        <button onClick={save} className="shrink-0 rounded-full border border-plum-line px-3 py-2 font-mono text-[11px] text-bone hover:border-lime hover:bg-lime hover:text-ink">Save</button>
+      </div>
+      {err && <p className="mt-1 font-mono text-[10px] text-bad">{err}</p>}
+      {current && <p className="mt-1 font-mono text-[10px] text-ok">logo set · shows on their portal</p>}
     </div>
   );
 }

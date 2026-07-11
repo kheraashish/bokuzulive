@@ -58,7 +58,7 @@ export async function set2fa(clientId: string, opts: { email?: boolean; sms?: bo
 }
 
 // ── one-time codes (email/sms OTP) ────────────────────────────────────────────
-export async function saveCode(email: string, code: string, ttlMs = 10 * 60 * 1000): Promise<void> {
+export async function saveCode(email: string, code: string, ttlMs = 30 * 60 * 1000): Promise<void> {
   const expires = new Date(Date.now() + ttlMs);
   await q(
     `INSERT INTO login_codes (email, code_hash, expires_at) VALUES (:e, :h, :x)

@@ -1,0 +1,141 @@
+import "server-only";
+import crypto from "crypto";
+import type { RowDataPacket } from "mysql2";
+import { q } from "./pool";
+
+// Passwordless portal users. A user is an email that may be linked to a client (company). Multiple
+// users can belong to one client (owner + members). Login is email + one-time code; no passwords.
+
+export interface UserRow extends RowDataPacket {
+  id: string;
+  email: string;
+  client_id: string | null;
+  role: string;
+  name: string | null;
+  phone: string | null;
+  twofa_sms: number;
+}
+
+export interface ClientPublic extends RowDataPacket {
+  id: string;
+  slug: string;
+  brand: string;
+  logo_url: string | null;
+  currency: string;
+}
+
+const norm = (s: string) => s.trim().toLowerCase();
+
+export async function findUserByEmail(email: string): Promise<UserRow | null> {
+  const rows = await q<UserRow[]>(
+    `SELECT id, email, client_id, role, name, phone, twofa_sms FROM portal_users WHERE email = :e LIMIT 1`,
+    { e: norm(email) }
+  );
+  return rows[0] ?? null;
+}
+
+/** Passwordless sign-in: return the existing user for this email, or create a new (unlinked) one. */
+export async function findOrCreateUser(email: string): Promise<UserRow> {
+  const existing = await findUserByEmail(email);
+  if (existing) return existing;
+  const id = crypto.randomUUID();
+  await q(`INSERT INTO portal_users (id, email) VALUES (:id, :e)`, { id, e: norm(email) });
+  return (await findUserByEmail(email)) as UserRow;
+}
+
+export async function getUserById(id: string): Promise<UserRow | null> {
+  const rows = await q<UserRow[]>(
+    `SELECT id, email, client_id, role, name, phone, twofa_sms FROM portal_users WHERE id = :id LIMIT 1`,
+    { id }
+  );
+  return rows[0] ?? null;
+}
+
+export async function updateLastLogin(id: string): Promise<void> {
+  await q(`UPDATE portal_users SET last_login_at = CURRENT_TIMESTAMP WHERE id = :id`, { id });
+}
+export async function setUserPhone(id: string, phone: string | null): Promise<void> {
+  await q(`UPDATE portal_users SET phone = :p WHERE id = :id`, { p: phone, id });
+}
+export async function setUser2faSms(id: string, on: boolean): Promise<void> {
+  await q(`UPDATE portal_users SET twofa_sms = :v WHERE id = :id`, { v: on ? 1 : 0, id });
+}
+
+/** Operator: attach an email to a client as owner/member (creates the user if new, or re-links). */
+export async function addUserToClient(clientId: string, email: string, role: "owner" | "member"): Promise<void> {
+  const e = norm(email);
+  await q(
+    `INSERT INTO portal_users (id, email, client_id, role) VALUES (:id, :e, :c, :r)
+     ON DUPLICATE KEY UPDATE client_id = VALUES(client_id), role = VALUES(role)`,
+    { id: crypto.randomUUID(), e, c: clientId, r: role }
+  );
+}
+export async function listUsersForClient(clientId: string): Promise<UserRow[]> {
+  return q<UserRow[]>(
+    `SELECT id, email, client_id, role, name, phone, twofa_sms FROM portal_users WHERE client_id = :c ORDER BY role DESC, created_at ASC`,
+    { c: clientId }
+  );
+}
+export async function removeUser(id: string): Promise<void> {
+  await q(`DELETE FROM portal_users WHERE id = :id`, { id });
+}
+
+// ── client (company) ──────────────────────────────────────────────────────────
+export async function getClientPublic(clientId: string): Promise<ClientPublic | null> {
+  const rows = await q<ClientPublic[]>(
+    `SELECT id, slug, brand, logo_url, currency FROM clients WHERE id = :id LIMIT 1`,
+    { id: clientId }
+  );
+  return rows[0] ?? null;
+}
+export async function setClientLogo(clientId: string, url: string | null): Promise<void> {
+  await q(`UPDATE clients SET logo_url = :u WHERE id = :id`, { u: url, id: clientId });
+}
+
+/** "Portal live" = the client has at least one ad account linked (an account ID set). */
+export async function clientIsLive(clientId: string): Promise<boolean> {
+  const rows = await q<RowDataPacket[]>(
+    `SELECT 1 AS x FROM connections WHERE client_id = :c AND external_account_id IS NOT NULL AND external_account_id <> '' LIMIT 1`,
+    { c: clientId }
+  );
+  return rows.length > 0;
+}
+
+// ── per-user trusted devices (30-day) ─────────────────────────────────────────
+export interface UserDeviceRow extends RowDataPacket {
+  id: string;
+  device_id: string;
+  label: string | null;
+  user_agent: string | null;
+  created_at: Date;
+  last_seen_at: Date;
+}
+
+export async function addUserDevice(userId: string, deviceId: string, meta: { label?: string; ua?: string }): Promise<void> {
+  await q(
+    `INSERT INTO user_devices (id, user_id, device_id, label, user_agent)
+     VALUES (:id, :u, :d, :l, :ua)
+     ON DUPLICATE KEY UPDATE created_at = CURRENT_TIMESTAMP, last_seen_at = CURRENT_TIMESTAMP, user_agent = VALUES(user_agent)`,
+    { id: crypto.randomUUID(), u: userId, d: deviceId, l: meta.label ?? null, ua: (meta.ua || "").slice(0, 300) || null }
+  );
+}
+export async function isUserDeviceTrusted(userId: string, deviceId: string): Promise<boolean> {
+  if (!deviceId) return false;
+  const rows = await q<RowDataPacket[]>(
+    `SELECT 1 AS x FROM user_devices WHERE user_id = :u AND device_id = :d AND created_at > (NOW() - INTERVAL 30 DAY) LIMIT 1`,
+    { u: userId, d: deviceId }
+  );
+  return rows.length > 0;
+}
+export async function listUserDevices(userId: string): Promise<UserDeviceRow[]> {
+  return q<UserDeviceRow[]>(
+    `SELECT id, device_id, label, user_agent, created_at, last_seen_at FROM user_devices WHERE user_id = :u ORDER BY last_seen_at DESC`,
+    { u: userId }
+  );
+}
+export async function removeUserDevice(userId: string, id: string): Promise<void> {
+  await q(`DELETE FROM user_devices WHERE user_id = :u AND id = :id`, { u: userId, id });
+}
+export async function removeUserDeviceByDeviceId(userId: string, deviceId: string): Promise<void> {
+  await q(`DELETE FROM user_devices WHERE user_id = :u AND device_id = :d`, { u: userId, d: deviceId });
+}

@@ -107,6 +107,19 @@ const DDL: string[] = [
      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
      PRIMARY KEY (id), KEY k_ticket_client (client_id)
    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS portal_users (
+     id VARCHAR(40) NOT NULL, email VARCHAR(200) NOT NULL, client_id VARCHAR(40) NULL,
+     role VARCHAR(20) NOT NULL DEFAULT 'member', name VARCHAR(160) NULL,
+     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, last_login_at DATETIME NULL,
+     PRIMARY KEY (id), UNIQUE KEY uq_user_email (email), KEY k_user_client (client_id)
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS user_devices (
+     id VARCHAR(40) NOT NULL, user_id VARCHAR(40) NOT NULL, device_id VARCHAR(80) NOT NULL,
+     label VARCHAR(160) NULL, user_agent VARCHAR(300) NULL,
+     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     last_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (id), UNIQUE KEY uq_ud (user_id, device_id), KEY k_ud_user (user_id)
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
 // Idempotent column additions for the clients table (MySQL has no ADD COLUMN IF NOT EXISTS,
@@ -116,6 +129,9 @@ const ALTERS: string[] = [
   `ALTER TABLE clients ADD COLUMN phone VARCHAR(40) NULL`,
   `ALTER TABLE clients ADD COLUMN twofa_email TINYINT(1) NOT NULL DEFAULT 0`,
   `ALTER TABLE clients ADD COLUMN twofa_sms TINYINT(1) NOT NULL DEFAULT 0`,
+  `ALTER TABLE clients ADD COLUMN logo_url VARCHAR(500) NULL`,
+  `ALTER TABLE portal_users ADD COLUMN phone VARCHAR(40) NULL`,
+  `ALTER TABLE portal_users ADD COLUMN twofa_sms TINYINT(1) NOT NULL DEFAULT 0`,
 ];
 
 /** Create all tables + apply column migrations. Idempotent; safe to call on every boot. */

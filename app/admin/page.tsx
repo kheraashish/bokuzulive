@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { isOperator, operatorConfigured } from "@/lib/adminAuth";
 import { dbConfigured } from "@/lib/db/pool";
 import { listClients, getConnections } from "@/lib/db/clients";
+import { listUsersForClient } from "@/lib/db/users";
 import { hasSetting } from "@/lib/db/settings";
 import { AdminConsole, type ClientView } from "./AdminConsole";
 
@@ -37,11 +38,13 @@ export default async function AdminPage() {
         currency: c.currency,
         loginEmail: c.login_email,
         status: c.status,
+        logoUrl: (c as unknown as { logo_url?: string | null }).logo_url ?? null,
         connections: (await getConnections(c.id)).map((x) => ({
           platform: x.platform,
           status: x.status,
           accountId: x.external_account_id,
         })),
+        users: (await listUsersForClient(c.id)).map((u) => ({ id: u.id, email: u.email, role: u.role })),
       }))
     );
     agencyGoogle = await hasSetting("google_refresh_token");
