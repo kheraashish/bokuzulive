@@ -18,14 +18,14 @@ export function ClientPortal() {
         {/* left: the claim */}
         <div className="self-center">
           <p className="kicker">The client portal</p>
-          <h2 className="display-lg mt-4 text-bone">The other half: what clients see.</h2>
+          <h2 className="display-lg mt-4 text-bone">What you see.</h2>
           <p className="mt-5 max-w-prose text-lg leading-relaxed text-ash">
-            Every Lautzu client gets a login to this portal. Spend, revenue, ROAS and CPA per
-            platform — each on its own attribution, never blended into a number we&apos;d have to
-            invent. And a timestamped log of every optimization the team makes in your accounts:
-            budget changes, bid changes, new ads, pauses. Hundreds of changes a week, all on the
-            record. If we touch your account, you can see it. If we make a mistake, you&apos;ll see
-            that too.
+            Spend, revenue, ROAS and CPA per platform — each on its own attribution, never blended
+            into a number we&apos;d have to invent. Custom date ranges. A funnel breakdown. Every ad
+            currently running with its performance. And a timestamped log of every change made in
+            your accounts: budget moves, bid changes, new campaigns, pauses — logged the moment they
+            happen. If something is touched in your account, you can see it. If a mistake is made,
+            you&apos;ll see that too.
           </p>
 
           <div className="mt-9">
@@ -39,9 +39,9 @@ export function ClientPortal() {
           </div>
 
           <p className="mt-6 max-w-prose font-mono text-xs leading-relaxed text-ash">
-            Google and Meta data, synced with every platform refresh. ROAS per platform on its own
-            attribution — a single cross-platform figure would require an incrementality or MMM
-            model, which this dashboard does not fabricate.
+            Every change is logged the moment it happens. Every dollar is synced with every platform
+            refresh. ROAS per platform on its own attribution — a single cross-platform figure would
+            require an incrementality or MMM model, which this dashboard does not fabricate.
           </p>
         </div>
 

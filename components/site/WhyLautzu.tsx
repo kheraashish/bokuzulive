@@ -13,7 +13,7 @@ export function WhyLautzu() {
         <p className="mt-7 text-lg leading-relaxed text-ash">
           Bokuzu was built inside Lautzu, our performance marketing agency, to kill the manual labor
           that eats an agency&apos;s week: pulling reports, cross-checking platforms, hunting for
-          what changed and why.
+          what changed and why. The same dashboard our clients get is the one we work from.
         </p>
 
         <h3 className="display-md mt-12 text-bone">Bokuzu does the digging.</h3>

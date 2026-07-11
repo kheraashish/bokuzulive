@@ -3,8 +3,11 @@ import { SectionShell } from "./ui";
 export function Pov() {
   return (
     <SectionShell className="py-24 lg:py-32">
-      <p className="kicker">The problem with AI outreach</p>
-      <div className="mt-6 grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-[1.2fr_1fr]">
+      <p className="kicker">Built for our own agency first — the outreach engine</p>
+      <p className="mt-4 max-w-prose text-lg leading-relaxed text-ash">
+        Bokuzu also runs Lautzu&apos;s own client acquisition. Same honesty, pointed outward.
+      </p>
+      <div className="mt-8 grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-[1.2fr_1fr]">
         <h2 className="display-lg text-bone">
           Every tool promises volume. None of them can tell you when they{"'"}re guessing.
         </h2>

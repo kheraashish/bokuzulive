@@ -8,15 +8,19 @@ export interface FaqItem {
 export const FAQ: FaqItem[] = [
   {
     q: "What is Bokuzu?",
-    a: "Bokuzu is the transparency software built by Lautzu, a performance marketing agency. It gives every Lautzu client a portal showing ad spend, ROAS and every optimization made in their Google and Meta accounts, and runs Lautzu's prospect audits on public data without fabricating metrics.",
+    a: "Bokuzu is an honest ad dashboard built by Lautzu, a performance marketing agency. It shows ad spend, revenue, ROAS and a log of every change in your Google and Meta accounts — and it also runs Lautzu's own prospect audits on public data without fabricating metrics.",
   },
   {
     q: "How fresh is the data?",
-    a: "Google Ads and Meta refresh their reporting roughly daily — that's a platform fact, not a Bokuzu limit. The moment fresh data lands, Bokuzu's analysis is already done: what changed, what's working, what to act on next. Your dashboard is never behind the platforms.",
+    a: "Two speeds, both honest. Changes in your accounts — bids, budgets, launches, pauses — are logged the moment they happen. Performance numbers come from Google and Meta's own reporting, so they sync with every platform refresh. Your dashboard is never behind the platforms, and never ahead of the truth.",
   },
   {
     q: "Do I get Bokuzu if I work with Lautzu?",
     a: "Yes. Every Lautzu engagement includes a Bokuzu portal login.",
+  },
+  {
+    q: "Can I get Bokuzu without working with Lautzu?",
+    a: "Not yet — today the portal comes with every Lautzu engagement. A standalone subscription (connect your own Google and Meta ad accounts, same dashboard, same honesty rail) is in early access. Request a seat above.",
   },
   {
     q: "What does Bokuzu refuse to do?",

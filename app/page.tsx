@@ -15,7 +15,7 @@ import { FAQ } from "@/components/site/faqData";
 
 const SITE = "https://bokuzu.com";
 const description =
-  "Bokuzu is the transparency portal behind Lautzu, a performance marketing agency. Clients see Google & Meta ad spend, ROAS and every optimization we make — analysis ready the moment the platforms refresh. Prospect audits on public data that never fabricate a metric.";
+  "Bokuzu shows where every ad dollar went and what it made back: ROAS per platform, custom date ranges, and every account change logged the moment it happens. Built by Lautzu. Never fabricated.";
 
 // Homepage-only structured data: the product itself (SoftwareApplication) and the FAQ. The FAQPage
 // entries are generated from the same faqData the visible accordion renders, so schema == content.
@@ -57,12 +57,12 @@ export default function Home() {
       <HeroIntro />
       <Nav />
       <Hero />
-      <ConsumesStrip />
+      <ClientPortal />
       <Pov />
+      <ConsumesStrip />
       <HowItWorks />
       <HonestyRail />
       <HumanGate />
-      <ClientPortal />
       <WhyLautzu />
       <Waitlist />
       <Faq />

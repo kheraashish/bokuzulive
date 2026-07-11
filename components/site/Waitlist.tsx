@@ -65,17 +65,19 @@ export function Waitlist() {
         <div className="relative overflow-hidden rounded-2xl border border-plum-line bg-plum-raise p-8 sm:p-12 lg:p-16">
           <div className="relative max-w-2xl">
             <p className="kicker">Early access</p>
-            <h2 className="display-lg mt-4 text-bone">
-              Run one honest pipeline before you trust it with a real prospect.
-            </h2>
+            <h2 className="display-lg mt-4 text-bone">Want the dashboard without the agency?</h2>
             <p className="mt-5 max-w-prose text-lg leading-relaxed text-ash">
-              Bokuzu is in a single-operator pilot. Request access and we will reach out when a seat
-              opens. One email about your invite, nothing else.
+              Bokuzu&apos;s portal is coming as a standalone subscription: connect your own Google and
+              Meta ad accounts and see where every dollar went, what it made back, and where your
+              ROAS trend is heading — over any date range you pick. Every change in your accounts,
+              logged the moment it happens. No fabricated cross-platform numbers. No last-click
+              theatre. Request access and we&apos;ll reach out when a seat opens. One email about your
+              invite, nothing else.
             </p>
 
             <p className="mt-6 max-w-prose rounded-xl border border-plum-line bg-plum px-4 py-3 text-sm leading-relaxed text-bone/90">
-              The client portal is live today for every Lautzu engagement. The outreach engine is in a
-              single-operator pilot — request a seat below.
+              The portal is live today for every Lautzu engagement. Standalone subscriptions are in
+              early access — request a seat below.
             </p>
 
             {done ? (
@@ -96,7 +98,7 @@ export function Waitlist() {
                   type="email"
                   required
                   autoComplete="email"
-                  placeholder="you@studio.com"
+                  placeholder="you@brand.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full flex-1 rounded-full border border-plum-line bg-ink px-5 py-3 text-sm text-bone placeholder:text-ash/70 transition-colors duration-200 ease-out focus:border-lime"
@@ -112,7 +114,7 @@ export function Waitlist() {
             )}
 
             <p className="mt-4 font-mono text-[11px] text-ash">
-              Public-data audits only. Your own credentials. Canadian data residency.
+              Your own credentials. Canadian data residency.
             </p>
           </div>
         </div>

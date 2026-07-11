@@ -13,8 +13,8 @@ export function Footer() {
               <span className="text-[17px] font-semibold tracking-tight text-bone">bokuzu</span>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-ash">
-              Senior calm, machine velocity. A client-acquisition workflow that assesses honestly
-              and never sends without you.
+              The honest layer over your ad accounts — a portal that hides nothing, and outreach that
+              never sends without you.
             </p>
           </div>
 
@@ -23,6 +23,9 @@ export function Footer() {
               <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-ash">
                 Product
               </span>
+              <a href="#portal" className="text-sm text-bone/80 transition-colors hover:text-bone">
+                Client portal
+              </a>
               <a href="#how" className="text-sm text-bone/80 transition-colors hover:text-bone">
                 How it works
               </a>

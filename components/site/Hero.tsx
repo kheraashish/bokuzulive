@@ -18,7 +18,7 @@ export function Hero() {
             className="display-xl mt-6 animate-rise text-bone"
             style={{ animationDelay: "120ms" }}
           >
-            Outreach that
+            The ad dashboard that
             <br />
             refuses to{" "}
             <span className="relative whitespace-nowrap text-lime">
@@ -32,9 +32,11 @@ export function Hero() {
             className="mt-7 max-w-prose animate-rise text-lg leading-relaxed text-ash"
             style={{ animationDelay: "200ms" }}
           >
-            Bokuzu audits prospects on public data, scores their creative against a rubric it will
-            not fake, and drafts sample concepts as the hook. Every email, every invite is proposed
-            for your approval. Nothing is invented. Nothing is sent without you.
+            Connect your Google and Meta ad accounts and see what actually matters: where every
+            dollar went, what it made back, ROAS trend over any date range — and a log of every
+            change inside your accounts, from bid moves to campaign launches to pauses. Every change
+            is logged the moment it happens. Every dollar is synced with every platform refresh.
+            Nothing is invented. Nothing is hidden.
           </p>
 
           <div
@@ -51,7 +53,7 @@ export function Hero() {
               href="#how"
               className="rounded-full border border-plum-line px-5 py-3 text-sm font-medium text-bone transition-colors duration-200 ease-out hover:border-lime hover:bg-lime hover:text-ink"
             >
-              See the pipeline
+              See how it works
             </a>
           </div>
 
@@ -59,9 +61,8 @@ export function Hero() {
             className="mt-8 animate-rise font-mono text-xs leading-relaxed text-ash"
             style={{ animationDelay: "340ms" }}
           >
-            Prospect audits carry no invented numbers — no fabricated CTR, no guessed ROAS. Client
-            dashboards carry only platform-reported ones, traced to source. If the signal is thin,
-            it says so.
+            Numbers come only from your platforms, traced to source — never blended into a
+            cross-platform figure we&apos;d have to invent. If the signal is thin, it says so.
           </p>
         </div>
 
