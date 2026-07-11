@@ -92,12 +92,44 @@ const DDL: string[] = [
      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
      PRIMARY KEY (k)
    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS trusted_devices (
+     id VARCHAR(40) NOT NULL, client_id VARCHAR(40) NOT NULL, device_id VARCHAR(80) NOT NULL,
+     label VARCHAR(160) NULL, user_agent VARCHAR(300) NULL, ip VARCHAR(60) NULL,
+     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     last_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (id), UNIQUE KEY uq_dev (client_id, device_id), KEY k_dev_client (client_id),
+     CONSTRAINT fk_dev_client FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS support_tickets (
+     id VARCHAR(40) NOT NULL, client_id VARCHAR(40) NULL, email VARCHAR(200) NOT NULL,
+     brand VARCHAR(160) NULL, subject VARCHAR(200) NOT NULL, message TEXT NOT NULL,
+     status VARCHAR(20) NOT NULL DEFAULT 'open',
+     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     PRIMARY KEY (id), KEY k_ticket_client (client_id)
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
-/** Create all tables if they do not exist. Idempotent; safe to call on every boot. */
+// Idempotent column additions for the clients table (MySQL has no ADD COLUMN IF NOT EXISTS,
+// so we run each ALTER and ignore the "duplicate column" error).
+const ALTERS: string[] = [
+  `ALTER TABLE clients ADD COLUMN password_hash VARCHAR(255) NULL`,
+  `ALTER TABLE clients ADD COLUMN phone VARCHAR(40) NULL`,
+  `ALTER TABLE clients ADD COLUMN twofa_email TINYINT(1) NOT NULL DEFAULT 0`,
+  `ALTER TABLE clients ADD COLUMN twofa_sms TINYINT(1) NOT NULL DEFAULT 0`,
+];
+
+/** Create all tables + apply column migrations. Idempotent; safe to call on every boot. */
 export async function ensureSchema(): Promise<void> {
   const p = pool();
   for (const stmt of DDL) {
     await p.query(stmt);
+  }
+  for (const stmt of ALTERS) {
+    try {
+      await p.query(stmt);
+    } catch (e) {
+      const errno = (e as { errno?: number }).errno;
+      if (errno !== 1060 && errno !== 1061) throw e; // 1060 dup column, 1061 dup key: safe to ignore
+    }
   }
 }

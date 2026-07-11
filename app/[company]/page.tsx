@@ -1,31 +1,44 @@
-import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { getClient } from "@/lib/demo/clients";
-import { PortalDashboard } from "@/components/dashboard/PortalDashboard";
+import { redirect } from "next/navigation";
+import { dbConfigured } from "@/lib/db/pool";
+import { currentClient, currentDeviceId } from "@/lib/portalCurrent";
+import { listDevices } from "@/lib/db/auth";
+import { getConnections } from "@/lib/db/clients";
+import { ClientPortal } from "./ClientPortal";
 
-// Vanity client portal: bokuzu.com/<company>. The company in the URL is only a label; access comes
-// from the signed session (here a demo cookie), NEVER the slug. So a logged-out visitor is sent to
-// login, and a signed-in client can only ever see their OWN portal, not another company's.
-//
-// Demo note: the session is a plain cookie set at login. In production this becomes the httpOnly,
-// HMAC-signed session (email + OTP) and getClient() becomes a tenant-scoped BigQuery read.
-//
-// Next 15: `params` and `cookies()` are async and must be awaited.
+// Real client portal at bokuzu.com/<company>. Access comes from the signed session, never the slug.
+// Logged out -> login. Logged in as another company -> your own portal.
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function CompanyPortal({ params }: { params: Promise<{ company: string }> }) {
   const { company } = await params;
   const slug = decodeURIComponent(company || "").toLowerCase();
 
-  const cookieStore = await cookies();
-  const session = cookieStore.get("bokuzu_portal")?.value;
-  if (!session) redirect(`/login?next=${encodeURIComponent(slug)}`);
+  if (!dbConfigured()) redirect("/login");
+  const client = await currentClient();
+  if (!client) redirect(`/login?next=${encodeURIComponent(slug)}`);
+  if (client.slug !== slug) redirect(`/${client.slug}`);
 
-  // A signed-in client can only view their own portal.
-  if (session !== slug) redirect(`/${session}`);
+  const thisDevice = await currentDeviceId();
+  const devices = (await listDevices(client.id)).map((d) => ({
+    id: d.id, label: d.label, userAgent: d.user_agent, lastSeen: String(d.last_seen_at), current: d.device_id === thisDevice,
+  }));
+  const connections = (await getConnections(client.id)).map((c) => ({
+    platform: c.platform, status: c.status, accountId: c.external_account_id,
+  }));
 
-  const client = getClient(slug);
-  if (!client) notFound();
-
-  return <PortalDashboard client={client} />;
+  return (
+    <ClientPortal
+      profile={{
+        brand: client.brand,
+        slug: client.slug,
+        email: client.login_email,
+        phone: client.phone,
+        twofaEmail: client.twofa_email === 1,
+        twofaSms: client.twofa_sms === 1,
+      }}
+      devices={devices}
+      connections={connections}
+    />
+  );
 }
