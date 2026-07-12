@@ -1,32 +1,34 @@
-// Demo client data for the Bokuzu portal. SAMPLE data so you can see the exact dashboard shape and
-// flow before the real Google/Meta ingest is wired. Deterministic (no random), so it looks identical
-// on every load. Mirrors the zones of the reference CRM dashboard: At a glance, Performance,
-// Ads running, Agency activity. Replace `getClient` with a tenant-scoped BigQuery read to go live.
+// Bokuzu client-portal example data.
+//
+// THE PERFORMANCE NUMBERS ARE REAL — exact spend, conversion value, ROAS, CPA and deltas for a live
+// Lautzu client, for the 7 / 30 / 90-day windows (see REAL below). EVERYTHING ELSE IS FABRICATED:
+// the client name, all destination URLs, ad copy, campaign names, change-log entries and the people
+// in them are deterministically generated placeholders so nothing identifies the real client. A
+// disclosure note at the bottom of the dashboard states exactly what is real and what is not.
+// Deterministic (no Math.random / no `new Date()` from "now"), so every render is identical.
 
 export type Platform = "google" | "meta";
 
-export interface AccountParams {
-  platform: Platform;
-  account: string;
-  base: number; // daily spend baseline
-  amp: number; // seasonal amplitude 0..1
-  trend: number; // growth across the window
-  phase: number;
-  cpa: number; // target cost per conversion
-  aov: number; // average order value
-  ctr: number;
-  cpm: number;
-  hasValue: boolean;
+export interface Agg {
+  spend: number;
+  conversions: number;
+  conversionValue: number;
+  impressions: number;
+  clicks: number;
 }
 
-export interface Campaign {
+export interface AccountView {
   platform: Platform;
-  name: string;
-  funnel: "TOP" | "MID" | "LOW";
-  share: number;
-  cpa: number;
-  roas: number | null;
-  ctr: number;
+  account: string;
+  hasValue: boolean;
+  cur: Agg;
+  prior: Agg;
+}
+
+export interface DailyPoint {
+  index: number;
+  google: { spend: number; conversionValue: number };
+  meta: { spend: number; conversionValue: number };
 }
 
 export interface AdCopyRow {
@@ -49,15 +51,21 @@ export interface ProductFeed {
 
 export interface ActivityEvent {
   platform: Platform;
-  label: string; // chip label, e.g. "BUDGET CHANGE"
-  title: string; // event title line
-  detail: string; // secondary line (e.g. "By: ppc@…")
-  when: string; // display timestamp
+  label: string;
+  title: string;
+  detail: string;
+  when: string;
 }
 
 export interface ActivityTypeCount {
   type: string;
   count: number;
+}
+
+export interface FunnelRow {
+  stage: "TOP" | "MID" | "LOW";
+  spend: number;
+  share: number;
 }
 
 export interface ClientData {
@@ -66,99 +74,18 @@ export interface ClientData {
   domain: string;
   currency: string;
   connections: { platform: Platform; account: string; syncedAgo: string }[];
-  accounts: AccountParams[];
-  campaigns: Campaign[];
-  adsLive: number;
-  adCopyTotal: number;
-  adCopy: AdCopyRow[];
-  productFeed: ProductFeed;
-  activityWeek: { total: number; google: number; meta: number };
-  googleEvents: ActivityEvent[];
-  metaEvents: ActivityEvent[];
-  googleEventTotal: number;
-  metaEventTotal: number;
-  activityBreakdown: ActivityTypeCount[];
-  dataSourceNote: { google: string; meta: string };
-}
-
-// ── deterministic daily series ───────────────────────────────────────────────
-export interface DayPoint {
-  spend: number;
-  conversions: number;
-  conversionValue: number;
-  impressions: number;
-  clicks: number;
-}
-
-export function seriesFor(a: AccountParams, days: number): DayPoint[] {
-  const out: DayPoint[] = [];
-  for (let i = 0; i < days; i++) {
-    const t = days > 1 ? i / (days - 1) : 1;
-    const seasonal = 1 + a.amp * Math.sin((i / 7) * Math.PI * 2 + a.phase);
-    const weekly = i % 7 === 5 || i % 7 === 6 ? 0.84 : 1;
-    const spend = a.base * (1 + a.trend * t) * seasonal * weekly;
-    const conversions = (spend / a.cpa) * (0.94 + 0.12 * ((seasonal - 1 + a.amp) / (2 * a.amp || 1)));
-    const conversionValue = a.hasValue ? conversions * a.aov : 0;
-    const impressions = (spend / a.cpm) * 1000;
-    const clicks = impressions * a.ctr;
-    out.push({ spend, conversions, conversionValue, impressions, clicks });
-  }
-  return out;
-}
-
-export interface Agg {
-  spend: number;
-  conversions: number;
-  conversionValue: number;
-  impressions: number;
-  clicks: number;
-}
-const zero: Agg = { spend: 0, conversions: 0, conversionValue: 0, impressions: 0, clicks: 0 };
-
-function sumSlice(series: DayPoint[], from: number, to: number): Agg {
-  return series.slice(from, to).reduce<Agg>(
-    (acc, dp) => ({
-      spend: acc.spend + dp.spend,
-      conversions: acc.conversions + dp.conversions,
-      conversionValue: acc.conversionValue + dp.conversionValue,
-      impressions: acc.impressions + dp.impressions,
-      clicks: acc.clicks + dp.clicks,
-    }),
-    { ...zero }
-  );
-}
-function addAgg(a: Agg, b: Agg): Agg {
-  return {
-    spend: a.spend + b.spend,
-    conversions: a.conversions + b.conversions,
-    conversionValue: a.conversionValue + b.conversionValue,
-    impressions: a.impressions + b.impressions,
-    clicks: a.clicks + b.clicks,
-  };
-}
-
-export interface AccountView {
-  platform: Platform;
-  account: string;
-  hasValue: boolean;
-  cur: Agg;
-  prior: Agg;
-}
-export interface DailyPoint {
-  index: number;
-  google: { spend: number; conversionValue: number };
-  meta: { spend: number; conversionValue: number };
 }
 
 export interface DashboardView {
   brand: string;
   currency: string;
   days: number;
+  rangeLabel: string;
   totalsCur: Agg;
   totalsPrior: Agg;
   accounts: AccountView[];
   daily: DailyPoint[];
-  campaigns: Campaign[];
+  funnel: FunnelRow[];
   adsLive: number;
   adCopyTotal: number;
   adCopy: AdCopyRow[];
@@ -172,55 +99,275 @@ export interface DashboardView {
   dataSourceNote: { google: string; meta: string };
 }
 
-const WINDOW = 90;
+// ── REAL figures (exact, per platform, per window) ───────────────────────────
+// [ spend, spendDelta(cur−prior), conversionValue, cpa, cpaDelta, roas, roasDelta ]
+type Raw = [number, number, number, number, number, number, number];
+interface RealRange {
+  days: number;
+  label: string;
+  google: Raw;
+  meta: Raw;
+}
+const REAL: Record<number, RealRange> = {
+  7: {
+    days: 7,
+    label: "Jul 6 – Jul 12, 2026",
+    google: [48453, -8271, 333754, 19.48, 7.25, 6.89, -5.85],
+    meta: [8368, -11274, 106467, 8.43, 4.15, 12.72, -16.22],
+  },
+  30: {
+    days: 30,
+    label: "Jun 13 – Jul 12, 2026",
+    google: [233439, 3999, 2872836, 13.13, 2.09, 12.31, -5.18],
+    meta: [63252, -63832, 1129911, 6.82, -10.38, 17.86, 10.73],
+  },
+  90: {
+    days: 90,
+    label: "Apr 14 – Jul 12, 2026",
+    google: [714268, 91702, 11268259, 11.94, 2.74, 15.78, -4.11],
+    meta: [270688, 40436, 2476237, 13.13, 3.88, 9.15, -3.82],
+  },
+};
 
-export function buildView(client: ClientData, days: number): DashboardView {
-  const n = Math.min(days, WINDOW);
-  const factor = n / 30; // scale range-dependent tallies (ad copy, product feed) with the window
-  const perAccount = client.accounts.map((a) => {
-    const s = seriesFor(a, WINDOW);
-    return { a, s, cur: sumSlice(s, WINDOW - n, WINDOW), prior: sumSlice(s, Math.max(0, WINDOW - 2 * n), WINDOW - n) };
-  });
+// Real funnel mix (90-day) and product feed — applied across windows by spend share.
+const FUNNEL_SHARES: { stage: "TOP" | "MID" | "LOW"; share: number }[] = [
+  { stage: "TOP", share: 0.5024 },
+  { stage: "MID", share: 0.0468 },
+  { stage: "LOW", share: 0.4508 },
+];
+// Product feed — real 90-day figures; scaled to the window by Google-spend share below.
+const PRODUCT_FEED_90 = { ads: 3, spend: 65390, impressions: 9_400_000, roas: 2.95 };
+const GOOGLE_SPEND_90 = 714268;
 
-  const totalsCur = perAccount.reduce<Agg>((acc, p) => addAgg(acc, p.cur), { ...zero });
-  const totalsPrior = perAccount.reduce<Agg>((acc, p) => addAgg(acc, p.prior), { ...zero });
+const ADS_LIVE = 494; // currently-live ad count (not window-scoped)
+// Row-level counts scale with the window (illustrative — see the on-dashboard disclosure). The
+// 90-day figures are the real ones from the source; shorter windows are proportioned down.
+const COUNTS: Record<number, { adCopy: number; gEvents: number; mEvents: number }> = {
+  7: { adCopy: 156, gEvents: 38, mEvents: 214 },
+  30: { adCopy: 289, gEvents: 96, mEvents: 612 },
+  90: { adCopy: 407, gEvents: 193, mEvents: 1401 },
+};
 
-  const g = perAccount.find((p) => p.a.platform === "google");
-  const m = perAccount.find((p) => p.a.platform === "meta");
-  const daily: DailyPoint[] = [];
-  for (let i = WINDOW - n; i < WINDOW; i++) {
-    daily.push({
-      index: i - (WINDOW - n),
-      google: { spend: g?.s[i].spend ?? 0, conversionValue: g?.s[i].conversionValue ?? 0 },
-      meta: { spend: m?.s[i].spend ?? 0, conversionValue: m?.s[i].conversionValue ?? 0 },
+// ── deterministic pseudo-random (index → 0..1), so no Math.random ────────────
+const rnd = (i: number, salt: number) => {
+  const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+const pick = <T,>(arr: T[], i: number, salt: number) => arr[Math.floor(rnd(i, salt) * arr.length) % arr.length];
+
+function aggFrom(raw: Raw): { cur: Agg; prior: Agg } {
+  const [spend, dSpend, cv, cpa, dCpa, roas, dRoas] = raw;
+  const conversions = spend / cpa;
+  const pSpend = spend - dSpend;
+  const pCpa = cpa - dCpa;
+  const pRoas = roas - dRoas;
+  const cur: Agg = { spend, conversions, conversionValue: cv, impressions: 0, clicks: 0 };
+  const prior: Agg = {
+    spend: pSpend,
+    conversions: pSpend / pCpa,
+    conversionValue: pRoas * pSpend,
+    impressions: 0,
+    clicks: 0,
+  };
+  return { cur, prior };
+}
+
+// Representative daily shape that sums EXACTLY to the real window totals (chart only).
+function buildDaily(days: number, g: Agg, m: Agg): DailyPoint[] {
+  const shape = (n: number, salt: number) => {
+    const raw: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const seasonal = 1 + 0.18 * Math.sin((i / 6.3) * Math.PI * 2 + salt);
+      const weekend = i % 7 === 5 || i % 7 === 6 ? 0.82 : 1;
+      const jitter = 0.85 + 0.3 * rnd(i, salt + 5);
+      raw.push(Math.max(0.05, seasonal * weekend * jitter));
+    }
+    const sum = raw.reduce((s, v) => s + v, 0) || 1;
+    return raw.map((v) => v / sum); // normalized weights
+  };
+  const gS = shape(days, 1.1), gV = shape(days, 2.3), mS = shape(days, 3.7), mV = shape(days, 4.9);
+  const out: DailyPoint[] = [];
+  for (let i = 0; i < days; i++) {
+    out.push({
+      index: i,
+      google: { spend: g.spend * gS[i], conversionValue: g.conversionValue * gV[i] },
+      meta: { spend: m.spend * mS[i], conversionValue: m.conversionValue * mV[i] },
     });
   }
+  return out;
+}
+
+// ── fabricated content pools (generic retail; nothing client-specific) ───────
+const HEADLINES: (string | null)[] = [
+  null, null, null, null, null, // most Shopping/PMax ads carry no editable headline
+  "Free shipping over $50",
+  "New arrivals, in stock now",
+  "Best sellers, restocked",
+  "Members save 15% today",
+  "Summer sale — ends soon",
+  "Top-rated, back in stock",
+  "Bundle & save this week",
+  "Your essentials, delivered",
+  "Shop the weekly deals",
+  "Trending now",
+];
+const DEST_PATHS = [
+  "/collections/best-sellers",
+  "/collections/new-arrivals",
+  "/products/daily-essentials",
+  "/collections/on-sale",
+  "/search?q=deals",
+  "/collections/top-rated",
+  "/products/starter-bundle",
+  "/collections/weekly-picks",
+  "/pages/free-shipping",
+  "/collections/gifts",
+];
+const DEST_HOST = "https://www.anonymized-store.example";
+
+function buildAdCopy(total: number): AdCopyRow[] {
+  const rows: AdCopyRow[] = [];
+  for (let i = 0; i < total; i++) {
+    const spend = Math.max(3, Math.round(11400 * Math.exp(-i / 46) * (0.55 + 0.9 * rnd(i, 1))));
+    const impressions = Math.round(spend * (18 + 60 * rnd(i, 2)));
+    const ctr = 0.006 + 0.12 * rnd(i, 3);
+    const roas = Math.round((0.3 + 18.5 * rnd(i, 4)) * 100) / 100;
+    const platform: Platform = rnd(i, 5) < 0.83 ? "google" : "meta";
+    const headline = pick(HEADLINES, i, 6);
+    const destination = headline == null ? `${DEST_HOST}${pick(DEST_PATHS, i, 7)}` : DEST_HOST + "/";
+    rows.push({ headline, destination, platform, impressions, ctr, spend, roas });
+  }
+  return rows.sort((a, b) => b.spend - a.spend);
+}
+
+// Deterministic timestamps counting back from a fixed anchor (not "now" → stable render).
+const ANCHOR = Date.UTC(2026, 6, 12, 17, 0, 0); // Jul 12 2026, 5:00 p.m.
+function whenAt(offsetMinutes: number): string {
+  const d = new Date(ANCHOR - offsetMinutes * 60000);
+  const date = d.toLocaleDateString("en-CA", { month: "short", day: "numeric", timeZone: "UTC" });
+  let h = d.getUTCHours();
+  const ampm = h >= 12 ? "p.m." : "a.m.";
+  h = h % 12 || 12;
+  const min = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${date}, ${h}:${min} ${ampm}`;
+}
+
+const EVENT_TYPES = [
+  { label: "BUDGET CHANGE", titles: ["Prospecting budget +12% ($420 → $470/day)", "Retargeting budget trimmed 8%", "Top campaign budget +$150/day", "Daily cap raised to $260"] },
+  { label: "BID CHANGE", titles: ["Target CPA lowered to $11.80", "tROAS raised to 450%", "Manual CPC +6% on core terms"] },
+  { label: "CAMPAIGN UPDATE", titles: ["Rotated in 4 new headlines", "Location targeting tightened", "Schedule shifted to peak hours"] },
+  { label: "ASSET CREATE", titles: ["Added 3 image assets to the asset group", "New sitelink set published", "Callout extensions refreshed"] },
+  { label: "AUDIENCE EDIT", titles: ["Retargeting window widened 14d → 30d", "Excluded recent purchasers", "Added lookalike seed segment"] },
+  { label: "KEYWORD EDIT", titles: ["Added 12 exact-match terms", "Negative list updated (+18)", "Paused 5 low-quality terms"] },
+  { label: "AD CREATED", titles: ["Launched new static into prospecting", "New responsive search ad live", "Added carousel variant"] },
+  { label: "FIRST DELIVERY", titles: ["Started delivery on new ad set", "First impressions served", "Delivery ramped to target"] },
+  { label: "PAUSE", titles: ["Paused ad below CTR floor", "Paused underperforming ad set", "Stopped fatigued creative"] },
+  { label: "AD RUN STATUS", titles: ["Ad set re-enabled after review", "Status: learning → active", "Update required → active"] },
+];
+
+function buildEvents(platform: Platform, total: number): ActivityEvent[] {
+  const actor = platform === "google" ? "ppc@lautzu.agency" : "Automated · Meta";
+  const out: ActivityEvent[] = [];
+  let minute = 0;
+  for (let i = 0; i < total; i++) {
+    const t = pick(EVENT_TYPES, i, platform === "google" ? 11 : 21);
+    const title = pick(t.titles, i, platform === "google" ? 12 : 22);
+    minute += 40 + Math.floor(rnd(i, 30) * 240); // step back in time, varied
+    out.push({
+      platform,
+      label: t.label,
+      title,
+      detail: `By: ${rnd(i, 31) < 0.75 ? actor : platform === "google" ? "Automated · Google" : "ppc@lautzu.agency"}`,
+      when: whenAt(minute),
+    });
+  }
+  return out;
+}
+
+// Illustrative optimisation mix (fabricated — see disclosure), as weights scaled to the window's
+// total event count so the breakdown moves with the date range.
+const ACTIVITY_WEIGHTS: { type: string; weight: number }[] = [
+  { type: "Update Ad Run Status", weight: 0.489 },
+  { type: "Create Ad", weight: 0.204 },
+  { type: "Budget Change", weight: 0.092 },
+  { type: "First Delivery Event", weight: 0.068 },
+  { type: "Campaign Update", weight: 0.042 },
+  { type: "Audience Edit", weight: 0.031 },
+  { type: "Asset Create", weight: 0.026 },
+  { type: "Bid Change", weight: 0.02 },
+  { type: "Keyword Edit", weight: 0.017 },
+  { type: "Pause", weight: 0.011 },
+];
+
+// ── assemble the view for a given window ─────────────────────────────────────
+const WINDOWS = [7, 30, 90];
+
+export function buildView(client: ClientData, days: number): DashboardView {
+  const key = WINDOWS.includes(days) ? days : 30;
+  const real = REAL[key];
+  const g = aggFrom(real.google);
+  const m = aggFrom(real.meta);
+
+  const sum = (sel: (a: Agg) => number, which: "cur" | "prior") => sel(g[which]) + sel(m[which]);
+  const totalsCur: Agg = {
+    spend: sum((a) => a.spend, "cur"),
+    conversions: sum((a) => a.conversions, "cur"),
+    conversionValue: sum((a) => a.conversionValue, "cur"),
+    impressions: 0,
+    clicks: 0,
+  };
+  const totalsPrior: Agg = {
+    spend: sum((a) => a.spend, "prior"),
+    conversions: sum((a) => a.conversions, "prior"),
+    conversionValue: sum((a) => a.conversionValue, "prior"),
+    impressions: 0,
+    clicks: 0,
+  };
+
+  const funnel: FunnelRow[] = FUNNEL_SHARES.map((f) => ({ stage: f.stage, share: f.share, spend: totalsCur.spend * f.share }));
+
+  const c = COUNTS[key];
+  const eventTotal = c.gEvents + c.mEvents;
+  const pfScale = g.cur.spend / GOOGLE_SPEND_90;
+  const productFeed: ProductFeed = {
+    platform: "google",
+    ads: PRODUCT_FEED_90.ads,
+    spend: Math.round(PRODUCT_FEED_90.spend * pfScale),
+    impressions: Math.round(PRODUCT_FEED_90.impressions * pfScale),
+    roas: PRODUCT_FEED_90.roas,
+  };
+  const activityBreakdown: ActivityTypeCount[] = ACTIVITY_WEIGHTS.map((w) => ({
+    type: w.type,
+    count: Math.max(1, Math.round(eventTotal * w.weight)),
+  }));
 
   return {
     brand: client.brand,
     currency: client.currency,
-    days: n,
+    days: real.days,
+    rangeLabel: real.label,
     totalsCur,
     totalsPrior,
-    accounts: perAccount.map((p) => ({ platform: p.a.platform, account: p.a.account, hasValue: p.a.hasValue, cur: p.cur, prior: p.prior })),
-    daily,
-    campaigns: client.campaigns,
-    adsLive: Math.round(client.adsLive * Math.max(0.5, factor)),
-    adCopyTotal: Math.round(client.adCopyTotal * Math.max(0.5, factor)),
-    adCopy: client.adCopy.map((r) => ({ ...r, spend: r.spend * factor, impressions: r.impressions * factor })),
-    productFeed: {
-      ...client.productFeed,
-      spend: client.productFeed.spend * factor,
-      impressions: client.productFeed.impressions * factor,
-      ads: client.productFeed.ads,
+    accounts: [
+      { platform: "google", account: "Anonymized Client — Google Ads", hasValue: true, cur: g.cur, prior: g.prior },
+      { platform: "meta", account: "Anonymized Client — Meta Ads", hasValue: true, cur: m.cur, prior: m.prior },
+    ],
+    daily: buildDaily(real.days, g.cur, m.cur),
+    funnel,
+    adsLive: ADS_LIVE,
+    adCopyTotal: c.adCopy,
+    adCopy: buildAdCopy(c.adCopy),
+    productFeed,
+    activityWeek: { total: eventTotal, google: c.gEvents, meta: c.mEvents },
+    googleEvents: buildEvents("google", c.gEvents),
+    metaEvents: buildEvents("meta", c.mEvents),
+    googleEventTotal: c.gEvents,
+    metaEventTotal: c.mEvents,
+    activityBreakdown,
+    dataSourceNote: {
+      google: "Google: change events via the Change History API (30-day retention, full backfill on first connect, daily incremental).",
+      meta: "Meta: reflects changes Meta's API reports; some Ads Manager actions are not exposed, and actor attribution may be absent for automated changes.",
     },
-    activityWeek: client.activityWeek,
-    googleEvents: client.googleEvents,
-    metaEvents: client.metaEvents,
-    googleEventTotal: client.googleEventTotal,
-    metaEventTotal: client.metaEventTotal,
-    activityBreakdown: client.activityBreakdown,
-    dataSourceNote: client.dataSourceNote,
   };
 }
 
@@ -228,85 +375,13 @@ export function buildView(client: ClientData, days: number): DashboardView {
 const CLIENTS: Record<string, ClientData> = {
   healthyplanet: {
     slug: "healthyplanet",
-    brand: "Demo Client",
-    domain: "democlient.example",
+    brand: "Anonymized Client",
+    domain: "anonymized-store.example",
     currency: "CAD",
     connections: [
-      { platform: "meta", account: "Demo Client - Meta Ads", syncedAgo: "8h ago" },
-      { platform: "google", account: "Demo Client - Google Ads", syncedAgo: "8h ago" },
+      { platform: "meta", account: "Anonymized Client — Meta Ads", syncedAgo: "2h ago" },
+      { platform: "google", account: "Anonymized Client — Google Ads", syncedAgo: "2h ago" },
     ],
-    accounts: [
-      { platform: "google", account: "Demo Client - Google Ads", base: 7400, amp: 0.16, trend: 0.14, phase: 0.4, cpa: 12.97, aov: 132, ctr: 0.041, cpm: 9.2, hasValue: true },
-      { platform: "meta", account: "Demo Client - Meta Ads", base: 2050, amp: 0.24, trend: 0.34, phase: 1.7, cpa: 7.0, aov: 122, ctr: 0.019, cpm: 7.4, hasValue: true },
-    ],
-    campaigns: [
-      { platform: "google", name: "Search · Brand", funnel: "LOW", share: 0.22, cpa: 9.1, roas: 6.8, ctr: 0.112 },
-      { platform: "google", name: "PMax · Supplements", funnel: "MID", share: 0.31, cpa: 17.4, roas: 4.2, ctr: 0.038 },
-      { platform: "google", name: "Shopping · Top Sellers", funnel: "LOW", share: 0.24, cpa: 11.8, roas: 5.6, ctr: 0.026 },
-      { platform: "google", name: "Demand Gen · Awareness", funnel: "TOP", share: 0.23, cpa: 41.2, roas: 1.7, ctr: 0.021 },
-      { platform: "meta", name: "Prospecting · Advantage+", funnel: "TOP", share: 0.38, cpa: 28.9, roas: 2.4, ctr: 0.016 },
-      { platform: "meta", name: "Retargeting · DPA", funnel: "LOW", share: 0.27, cpa: 12.6, roas: 5.9, ctr: 0.031 },
-      { platform: "meta", name: "Consideration · Video", funnel: "MID", share: 0.2, cpa: 24.1, roas: 2.9, ctr: 0.014 },
-      { platform: "meta", name: "Broad · Interest", funnel: "TOP", share: 0.15, cpa: 33.7, roas: 1.9, ctr: 0.012 },
-    ],
-    adsLive: 494,
-    adCopyTotal: 407,
-    adCopy: [
-      { headline: null, destination: "democlient.example/store/index.php?cName=PROTEIN", platform: "google", impressions: 148400, ctr: 0.0386, spend: 11402, roas: 0.33 },
-      { headline: "Web Relevant Ad", destination: "democlient.example/", platform: "google", impressions: 658900, ctr: 0.0491, spend: 10764, roas: 10.39 },
-      { headline: null, destination: "democlient.example/store/index.php?cName=VITAMINS+%26+MINERALS", platform: "google", impressions: 134600, ctr: 0.0375, spend: 8813, roas: 1.49 },
-      { headline: null, destination: "democlient.example/catalogsearch/result/?q=dr.+bronner", platform: "google", impressions: 329300, ctr: 0.0151, spend: 6405, roas: 1.65 },
-      { headline: null, destination: "democlient.example/products/natural-factors", platform: "google", impressions: 121200, ctr: 0.1262, spend: 5115, roas: 18.45 },
-      { headline: null, destination: "democlient.example/store/index.php?cName=PROTEIN", platform: "google", impressions: 65100, ctr: 0.0384, spend: 4726, roas: 0.63 },
-      { headline: "Immunity, restocked", destination: "democlient.example/products/immunity", platform: "meta", impressions: 104800, ctr: 0.0574, spend: 3708, roas: 4.41 },
-      { headline: null, destination: "democlient.example/products/aor.html", platform: "google", impressions: 38500, ctr: 0.0836, spend: 2917, roas: 17.07 },
-      { headline: "Founders on why it works", destination: "democlient.example/story", platform: "meta", impressions: 51700, ctr: 0.0321, spend: 2898, roas: 1.03 },
-      { headline: null, destination: "democlient.example/products/aor.html", platform: "google", impressions: 33500, ctr: 0.1011, spend: 2691, roas: 18.04 },
-      { headline: "Protein, 20% off this week", destination: "democlient.example/sale", platform: "meta", impressions: 100000, ctr: 0.0278, spend: 2294, roas: 5.73 },
-      { headline: null, destination: "democlient.example/products/lorna-vanderhaeghe.html", platform: "google", impressions: 53900, ctr: 0.056, spend: 2216, roas: 9.26 },
-    ],
-    productFeed: { platform: "google", ads: 3, spend: 66712, impressions: 9_700_000, roas: 2.98 },
-    activityWeek: { total: 837, google: 192, meta: 645 },
-    googleEvents: [
-      { platform: "google", label: "BUDGET CHANGE", title: "PMax · Supplements budget +18% ($420 to $495/day)", detail: "By: ppc@bokuzu.agency", when: "Jul 4, 12:12 p.m." },
-      { platform: "google", label: "BID CHANGE", title: "Shopping · Top Sellers tCPA lowered to $11.80", detail: "By: ppc@bokuzu.agency", when: "Jul 4, 11:58 a.m." },
-      { platform: "google", label: "ASSET CREATE", title: "Added 4 headlines to Search · Brand RSA v4", detail: "By: ppc@bokuzu.agency", when: "Jul 4, 11:40 a.m." },
-      { platform: "google", label: "CAMPAIGN UPDATE", title: "Demand Gen · Awareness daily cap set to $260", detail: "By: ppc@bokuzu.agency", when: "Jul 3, 4:05 p.m." },
-      { platform: "google", label: "KEYWORD EDIT", title: "Added 12 exact-match terms to Search · Brand", detail: "By: ppc@bokuzu.agency", when: "Jul 3, 2:22 p.m." },
-      { platform: "google", label: "BUDGET CHANGE", title: "Shopping · Top Sellers budget +$120/day", detail: "By: ppc@bokuzu.agency", when: "Jul 2, 9:31 a.m." },
-    ],
-    metaEvents: [
-      { platform: "meta", label: "AD CREATED", title: "Launched Spring Immunity · UGC 02 into Prospecting", detail: "By: Meta", when: "Jul 2, 8:38 a.m." },
-      { platform: "meta", label: "FIRST DELIVERY", title: "Started delivery: Instore Biweekly · English Video", detail: "By: Meta", when: "Jul 2, 8:28 a.m." },
-      { platform: "meta", label: "PAUSE", title: "Paused Sale · Static 03 (CTR below 1.2% floor)", detail: "By: Meta", when: "Jul 2, 8:27 a.m." },
-      { platform: "meta", label: "AUDIENCE EDIT", title: "Retargeting · DPA window widened 14d to 30d", detail: "By: Meta", when: "Jul 1, 3:14 p.m." },
-      { platform: "meta", label: "BUDGET CHANGE", title: "Prospecting · Advantage+ budget +$300/day", detail: "By: Meta", when: "Jul 1, 10:02 a.m." },
-      { platform: "meta", label: "AD SET UPDATE", title: "Consideration · Video optimization goal to purchases", detail: "By: Meta", when: "Jun 30, 5:47 p.m." },
-    ],
-    googleEventTotal: 192,
-    metaEventTotal: 645,
-    activityBreakdown: [
-      { type: "Update Ad Run Status", count: 530 },
-      { type: "Budget Change", count: 95 },
-      { type: "Campaign Update", count: 42 },
-      { type: "First Delivery Event", count: 32 },
-      { type: "Update Ad Set Run Status", count: 19 },
-      { type: "Audience Edit", count: 15 },
-      { type: "Campaign Asset Create", count: 13 },
-      { type: "Campaign Create", count: 12 },
-      { type: "Create Ad", count: 10 },
-      { type: "Update Campaign Run Status", count: 9 },
-      { type: "Update Ad Creative", count: 7 },
-      { type: "Update Ad Set Target Spec", count: 7 },
-      { type: "Update Ad Set Budget", count: 6 },
-      { type: "Ad Account Billing Charge", count: 4 },
-      { type: "Bid Change", count: 2 },
-      { type: "Keyword Edit", count: 2 },
-    ],
-    dataSourceNote: {
-      google: "Google: change events via the Change History API (30-day retention, full backfill on first connect, daily incremental).",
-      meta: "Meta: reflects changes Meta's API reports; some Ads Manager actions are not exposed, and actor attribution may be absent for automated changes.",
-    },
   },
 };
 
