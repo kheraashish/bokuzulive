@@ -22,8 +22,61 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
   const router = useRouter();
   const [days, setDays] = useState<number>(30);
   const [adCopyOpen, setAdCopyOpen] = useState(false);
+  const [embed, setEmbed] = useState(false);
   const [today, setToday] = useState<Date | null>(null);
   useEffect(() => setToday(new Date()), []);
+  useEffect(() => {
+    setEmbed(new URLSearchParams(window.location.search).get("embed") === "1");
+  }, []);
+
+  // When embedded as a decorative preview (?embed=1), the page auto-tours its OWN tagged sections:
+  // park on the 2nd section, scroll UP into the first so its odometer replays, hold it 4s, then cycle
+  // the rest at 2.5s and loop. It scrolls its own window, so it works even when embedded cross-origin
+  // (e.g. on lautzu.com) — the host page needs no script of its own.
+  useEffect(() => {
+    if (!embed) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const style = document.createElement("style");
+    style.textContent = "::-webkit-scrollbar{width:0;height:0}html{scrollbar-width:none}";
+    document.head.appendChild(style);
+    const HOLD = 2500;
+    const HOLD_FIRST = 4000;
+    let idx = 0;
+    let timer = 0;
+    const targetY = (el: HTMLElement) => {
+      const header = document.querySelector("header");
+      const headerH = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+      const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      return Math.min(max, Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerH - 16));
+    };
+    const go = () => {
+      const els = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"));
+      if (!els.length) {
+        timer = window.setTimeout(go, 800);
+        return;
+      }
+      const i = idx % els.length;
+      window.scrollTo({ top: targetY(els[i]), behavior: "smooth" });
+      idx = i + 1;
+      timer = window.setTimeout(go, i === 0 ? HOLD_FIRST : HOLD);
+    };
+    const start = () => {
+      const els = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"));
+      if (els.length < 2) {
+        timer = window.setTimeout(start, 500);
+        return;
+      }
+      window.scrollTo({ top: targetY(els[1]), behavior: "auto" });
+      idx = 0;
+      timer = window.setTimeout(go, 700);
+    };
+    const startTimer = window.setTimeout(start, 1000);
+    return () => {
+      window.clearTimeout(startTimer);
+      window.clearTimeout(timer);
+      style.remove();
+    };
+  }, [embed]);
   const v = useMemo(() => buildView(client, days), [client, days]);
 
   const money = (n: number, max = 0) =>
@@ -118,7 +171,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         </div>
 
         {/* ── ZONE 1: AT A GLANCE ── */}
-        <ZoneHead title="At a glance" meta={`${rangeStr} vs prior period`} />
+        <ZoneHead title="At a glance" meta={`${rangeStr} vs prior period`} tour />
         <div className="mb-3 flex flex-wrap items-center justify-between gap-y-2">
           <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-ash">Conversion-tracked accounts</span>
           <div className="flex items-center gap-2.5">
@@ -163,7 +216,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         <p className="mt-2 font-mono text-[11px] text-ash">As reported by Google Ads · Meta Marketing API · {rangeStr} · attribution: in-platform (last click)</p>
 
         {/* ── ZONE 2: PERFORMANCE ── */}
-        <ZoneHead title="Performance" meta={`${rangeStr} · daily grain`} className="mt-12" />
+        <ZoneHead title="Performance" meta={`${rangeStr} · daily grain`} className="mt-12" tour />
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
           <div className="rounded-2xl border border-plum-line bg-plum p-5 sm:p-6">
             <h3 className="text-xl font-semibold text-lime">Spend + ROAS trend</h3>
@@ -216,14 +269,14 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         </section>
 
         {/* ── ZONE 3: AGENCY ACTIVITY LOGS (Google · Meta side by side) ── */}
-        <ZoneHead title="Agency activity logs" meta="Optimization event log, done by agency" className="mt-12" />
+        <ZoneHead title="Agency activity logs" meta="Optimization event log, done by agency" className="mt-12" tour />
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <EventFeed platform="google" title="Google Ads" total={v.googleEventTotal} events={v.googleEvents} />
           <EventFeed platform="meta" title="Meta Ads" total={v.metaEventTotal} events={v.metaEvents} />
         </section>
 
         {/* ── ZONE 4: OPTIMIZATIONS SUMMARY ── */}
-        <ZoneHead title="Optimizations summary" meta={`${rangeStr} · by change type`} className="mt-12" />
+        <ZoneHead title="Optimizations summary" meta={`${rangeStr} · by change type`} className="mt-12" tour />
         <div className="rounded-2xl border border-plum-line bg-plum-raise p-5 sm:p-6">
           <p className="text-5xl font-semibold tracking-tight text-lime"><CountUp value={v.activityWeek.total} format={int} /></p>
           <p className="mt-1 text-sm text-bone">Optimizations in this range</p>
@@ -252,7 +305,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
           <Cell label="Impressions" value={<CountUp value={v.productFeed.impressions} format={compact} />} />
         </div>
 
-        <div className="mb-2 mt-8 flex items-baseline gap-2">
+        <div data-tour className="mb-2 mt-8 flex scroll-mt-24 items-baseline gap-2">
           <span className="font-mono text-base uppercase tracking-[0.12em] text-lime">Ad copy</span>
           <CountUp value={v.adCopyTotal} format={int} className="font-mono text-xl text-lime" />
           <span className="text-lg text-lime">the words running now, with performance</span>
@@ -303,7 +356,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
           </div>
         </section>
         {/* ── NOTES & DISCLAIMERS ── */}
-        <ZoneHead title="Notes & disclaimers" meta="Methodology and anonymization" className="mt-12" />
+        <ZoneHead title="Notes & disclaimers" meta="Methodology and anonymization" className="mt-12" tour />
         <div className="max-w-3xl space-y-4">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-lime">At a glance</p>
@@ -387,9 +440,9 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
   );
 }
 
-function ZoneHead({ title, meta, className = "" }: { title: string; meta: string; className?: string }) {
+function ZoneHead({ title, meta, className = "", tour = false }: { title: string; meta: string; className?: string; tour?: boolean }) {
   return (
-    <div className={`mb-4 flex flex-col gap-1 border-b border-plum-line/60 pb-2 sm:flex-row sm:items-baseline sm:justify-between ${className}`}>
+    <div data-tour={tour ? "" : undefined} className={`mb-4 flex flex-col gap-1 border-b border-plum-line/60 pb-2 sm:flex-row sm:items-baseline sm:justify-between ${className}`}>
       <h2 className="font-mono text-xl font-semibold uppercase tracking-[0.14em] text-lime">{title}</h2>
       <span className="font-mono text-[11px] text-ash">{meta}</span>
     </div>

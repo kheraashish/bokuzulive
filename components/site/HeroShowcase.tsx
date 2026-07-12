@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useRef } from "react";
 import { Band, Chip, Dot } from "./ui";
 
 // The two hero card visuals, always visible side by side (no flip). EngineCard is the internal
@@ -52,65 +49,8 @@ export function EngineCard() {
 
 // ── RIGHT: the client portal ──────────────────────────────────────────────────
 export function PortalCard() {
-  const frameRef = useRef<HTMLIFrameElement>(null);
-
-  // Hide the preview's scrollbar for a clean look (same-origin, so we can inject a style).
-  const onFrameLoad = () => {
-    const doc = frameRef.current?.contentDocument;
-    if (!doc) return;
-    try {
-      const style = doc.createElement("style");
-      style.textContent = "::-webkit-scrollbar{width:0;height:0}html{scrollbar-width:none}";
-      doc.head.appendChild(style);
-    } catch {
-      /* cross-origin / blocked */
-    }
-  };
-
-  // Gently tour the preview section by section and loop. Stops come from the page's own zone
-  // headings, so it lands on a real section each time instead of racing to the bottom.
-  useEffect(() => {
-    // Respect reduced-motion: leave the preview still instead of auto-scrolling it.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const HOLD = 2600;
-    let stops: number[] = [];
-    let idx = 0;
-    let timer: number;
-
-    const computeStops = (): number[] => {
-      const win = frameRef.current?.contentWindow;
-      const doc = frameRef.current?.contentDocument;
-      if (!win || !doc) return [];
-      const max = Math.max(0, doc.documentElement.scrollHeight - win.innerHeight);
-      const heads = Array.from(doc.querySelectorAll("h2")) as HTMLElement[];
-      const ys = heads.map((h) => Math.min(max, Math.max(0, h.getBoundingClientRect().top + win.scrollY - 16)));
-      return [0, ...ys, max].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
-    };
-
-    const go = () => {
-      const win = frameRef.current?.contentWindow;
-      if (!win) {
-        timer = window.setTimeout(go, 500);
-        return;
-      }
-      if (!stops.length) stops = computeStops();
-      if (stops.length < 2) {
-        timer = window.setTimeout(go, 800);
-        return;
-      }
-      win.scrollTo({ top: stops[idx], behavior: "smooth" });
-      idx = (idx + 1) % stops.length;
-      timer = window.setTimeout(go, HOLD);
-    };
-
-    const startTimer = window.setTimeout(go, 1200);
-    return () => {
-      window.clearTimeout(startTimer);
-      window.clearTimeout(timer);
-    };
-  }, []);
-
+  // The preview tours itself (and runs the odometer) inside the iframe via ?embed=1 — so this works
+  // the same whether same-origin (here) or cross-origin (e.g. embedded on lautzu.com).
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-plum-line bg-ink shadow-lift">
       <div className="flex items-center gap-2 border-b border-plum-line px-3 py-2">
@@ -123,11 +63,9 @@ export function PortalCard() {
       </div>
       <div className="relative flex-1 overflow-hidden">
         <iframe
-          ref={frameRef}
-          src="/example"
+          src="/example?embed=1"
           title="Client portal dashboard example: spend, revenue, ROAS and CPA per platform with a log of every account change"
           tabIndex={-1}
-          onLoad={onFrameLoad}
           className="pointer-events-none h-full w-full"
           style={{ border: 0 }}
         />
