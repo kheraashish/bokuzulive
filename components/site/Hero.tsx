@@ -13,11 +13,11 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-5 pb-10 pt-10 sm:px-8 sm:pb-16 lg:pt-12"
+      className="relative min-h-[calc(100vh-4rem)] overflow-hidden px-5 pb-10 pt-4 sm:px-8 sm:pb-16 sm:pt-10 lg:pt-12"
     >
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center text-center">
-        {/* badge */}
-        <div className="animate-rise" style={{ animationDelay: "40ms" }}>
+        {/* badge — hidden on phones to give the hero + dashboard preview more vertical room */}
+        <div className="hidden animate-rise sm:block" style={{ animationDelay: "40ms" }}>
           <Chip tone="lime">
             <Dot tone="lime" /> Honest by construction
           </Chip>
@@ -61,7 +61,7 @@ export function Hero() {
               <span className="text-lime">The portal</span>
               <span className="text-ash"> — what you see</span>
             </p>
-            <div className="mt-3 h-[280px] lg:h-[clamp(300px,48vh,440px)]">
+            <div className="mt-3 h-[440px] lg:h-[clamp(300px,48vh,440px)]">
               <PortalCard />
             </div>
             <p className="mt-4 text-sm leading-relaxed text-ash">

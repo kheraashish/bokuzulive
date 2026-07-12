@@ -64,7 +64,7 @@ export function PortalCard() {
     const begin = () => {
       if (started) return;
       started = true;
-      window.setTimeout(() => send({ bokuzuTour: "start" }), 1000);
+      send({ bokuzuTour: "start" });
     };
     const onMsg = (e: MessageEvent) => {
       if (e.source !== frameRef.current?.contentWindow) return;

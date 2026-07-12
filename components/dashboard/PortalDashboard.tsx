@@ -18,6 +18,16 @@ function nf(key: string, opts: Intl.NumberFormatOptions) {
   return f;
 }
 
+// True when rendered as the decorative auto-tour embed (?embed=1). In embed mode the odometers
+// replay each time a section scrolls in (for the loop); on the real page they animate once.
+let _embedMode: boolean | null = null;
+function isEmbedMode(): boolean {
+  if (_embedMode === null) {
+    _embedMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("embed") === "1";
+  }
+  return _embedMode;
+}
+
 export function PortalDashboard({ client, example = false }: { client: ClientData; example?: boolean }) {
   const router = useRouter();
   const [days, setDays] = useState<number>(30);
@@ -47,11 +57,12 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
       "::-webkit-scrollbar{width:0;height:0}html{scrollbar-width:none}header,[data-example-ribbon]{display:none!important}";
     document.head.appendChild(style);
 
-    const HOLD = 2500;
-    const HOLD_FIRST = 4000;
-    const PARK = 2000; // dwell on the 2nd section before rising into the first
+    const HOLD = 2500;       // dwell per section during the loop
+    const HOLD_FIRST = 3000; // hold on the first section (the totals) after rising into it
+    const DWELL2 = 1500;     // the start section shows this long before we rise into the first
     let idx = 0;
     let tourTimer = 0;
+    let parkTimer = 0;
     let fallback = 0;
     let started = false;
 
@@ -60,6 +71,19 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
       const headerH = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
       const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
       return Math.min(max, Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerH - 16));
+    };
+    // Park on the start section (the Optimizations summary) straight away, so the preview never shows
+    // the first section at rest — the totals should only appear as their odometer animates in.
+    const parkOnStart = () => {
+      const el =
+        document.querySelector<HTMLElement>("[data-tour-start]") ||
+        document.querySelectorAll<HTMLElement>("[data-tour]")[1] ||
+        null;
+      if (!el) {
+        parkTimer = window.setTimeout(parkOnStart, 100);
+        return;
+      }
+      window.scrollTo({ top: targetY(el), behavior: "auto" });
     };
     const go = () => {
       const els = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"));
@@ -72,13 +96,16 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
       idx = i + 1;
       tourTimer = window.setTimeout(go, i === 0 ? HOLD_FIRST : HOLD);
     };
+    // On the host's go-ahead: dwell on the (already-parked) 2nd section, then rise into the first so
+    // its odometer replays; hold it, then loop through every section.
     const runTour = () => {
       if (started) return;
       started = true;
-      const els = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"));
-      if (els.length >= 2) window.scrollTo({ top: targetY(els[1]), behavior: "auto" });
+      window.clearTimeout(parkTimer);
+      parkOnStart();
+      window.dispatchEvent(new Event("bokuzu:replay")); // replay the start section's odometer on screen
       idx = 0;
-      tourTimer = window.setTimeout(go, PARK);
+      tourTimer = window.setTimeout(go, DWELL2);
     };
 
     const onMsg = (e: MessageEvent) => {
@@ -88,6 +115,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
       else if (d.bokuzuTour === "start") runTour();
     };
     window.addEventListener("message", onMsg);
+    parkOnStart(); // show the start section immediately, even while awaiting the go-ahead
     try {
       window.parent.postMessage({ bokuzuTour: "ready" }, "*");
     } catch {
@@ -99,6 +127,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
       window.removeEventListener("message", onMsg);
       window.clearTimeout(fallback);
       window.clearTimeout(tourTimer);
+      window.clearTimeout(parkTimer);
       style.remove();
     };
   }, [embed]);
@@ -170,7 +199,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
                 <button key={r} onClick={() => setDays(r)} className={`rounded-full px-3 py-1 font-mono text-xs transition-colors duration-150 ${days === r ? "bg-lime text-ink" : "text-ash hover:text-bone"}`}>{r}d</button>
               ))}
             </div>
-            <button onClick={leave} className="rounded-full border border-plum-line px-3.5 py-1.5 text-xs font-medium text-bone transition-colors duration-150 hover:border-ash hover:bg-plum-raise">{example ? "Back to site" : "Sign out"}</button>
+            <button onClick={leave} className="rounded-full border border-plum-line px-3.5 py-1.5 text-xs font-medium text-bone transition-colors duration-150 hover:border-lime hover:bg-lime hover:text-ink">{example ? "Back to site" : "Sign out"}</button>
           </div>
         </div>
       </header>
@@ -207,12 +236,12 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         </div>
         <div className="mb-4 flex flex-wrap items-baseline gap-x-12 gap-y-3">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <CountUp value={cur.spend} format={money} className="text-5xl font-semibold tracking-tight text-bad" />
+            <CountUp value={cur.spend} format={money} className="text-4xl font-semibold tracking-tight text-bad sm:text-5xl" />
             <span className="text-sm text-ash">total spend</span>
             <DeltaBadge diff={cur.spend - prior.spend} kind="money" goodUp={true} money={money} />
           </div>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <CountUp value={totalRevenue} format={money} className="text-5xl font-semibold tracking-tight text-lime" />
+            <CountUp value={totalRevenue} format={money} className="text-4xl font-semibold tracking-tight text-lime sm:text-5xl" />
             <span className="text-sm text-ash">total revenue</span>
             <DeltaBadge diff={totalRevenue - priorRevenue} kind="money" goodUp={true} money={money} />
           </div>
@@ -220,12 +249,12 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
 
         <div className="space-y-3">
           {v.accounts.map((a) => (
-            <div key={a.platform} className="grid grid-cols-2 items-stretch gap-4 rounded-2xl border border-plum-line bg-plum-raise p-4 sm:grid-cols-[auto_1fr_1fr_1fr_1fr] sm:p-5">
-              <div className="col-span-2 flex items-center sm:col-span-1"><PlatformChip platform={a.platform} /></div>
-              <Cell label="Spend" value={<CountUp value={a.cur.spend} format={money} />} valueClassName="text-2xl text-bad">
+            <div key={a.platform} className="grid grid-cols-2 items-stretch gap-4 rounded-2xl border border-plum-line bg-plum-raise p-4 lg:grid-cols-[auto_1fr_1fr_1fr_1fr] lg:p-5">
+              <div className="col-span-2 flex items-center lg:col-span-1"><PlatformChip platform={a.platform} /></div>
+              <Cell label="Spend" value={<CountUp value={a.cur.spend} format={money} />} valueClassName="text-lg text-bad sm:text-2xl">
                 <DeltaBadge diff={a.cur.spend - a.prior.spend} kind="money" goodUp={true} money={money} />
               </Cell>
-              <Cell label="Conv. value" value={<CountUp value={a.cur.conversionValue} format={money} />} valueClassName="text-2xl text-lime" />
+              <Cell label="Conv. value" value={<CountUp value={a.cur.conversionValue} format={money} />} valueClassName="text-lg text-lime sm:text-2xl" />
               <Cell label="ROAS" value={<CountUp value={roasOf(a.cur)} format={x} />}>
                 <DeltaBadge diff={roasOf(a.cur) - roasOf(a.prior)} kind="roasx" goodUp={true} money={money} />
               </Cell>
@@ -301,7 +330,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         </section>
 
         {/* ── ZONE 4: OPTIMIZATIONS SUMMARY ── */}
-        <ZoneHead title="Optimizations summary" meta={`${rangeStr} · by change type`} className="mt-12" tour />
+        <ZoneHead title="Optimizations summary" meta={`${rangeStr} · by change type`} className="mt-12" tour startHere />
         <div className="rounded-2xl border border-plum-line bg-plum-raise p-5 sm:p-6">
           <p className="text-5xl font-semibold tracking-tight text-lime"><CountUp value={v.activityWeek.total} format={int} /></p>
           <p className="mt-1 text-sm text-bone">Optimizations in this range</p>
@@ -431,6 +460,8 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [nonce, setNonce] = useState(0);
+  const lastValue = useRef<number | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -440,11 +471,27 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
     return () => io.disconnect();
   }, []);
 
+  // Lets the embedded auto-tour force a fresh count-up on the section it's already showing.
   useEffect(() => {
+    const onReplay = () => setNonce((n) => n + 1);
+    window.addEventListener("bokuzu:replay", onReplay);
+    return () => window.removeEventListener("bokuzu:replay", onReplay);
+  }, []);
+
+  useEffect(() => {
+    const embed = isEmbedMode();
     if (!visible) {
-      setDisplay(0);
+      // Embed preview resets so each section replays as it re-enters; the real page stays settled.
+      if (embed) setDisplay(0);
       return;
     }
+    // Real page: a value already animated (e.g. scrolling back up to it) shouldn't run again — only
+    // a new value (date change) or a fresh mount (refresh) re-animates.
+    if (!embed && lastValue.current === value) {
+      setDisplay(value);
+      return;
+    }
+    lastValue.current = value;
     let raf = 0;
     let start: number | null = null;
     const step = (t: number) => {
@@ -456,7 +503,7 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [visible, value]);
+  }, [visible, value, nonce]);
 
   return (
     <span ref={ref} className={className}>
@@ -465,9 +512,9 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
   );
 }
 
-function ZoneHead({ title, meta, className = "", tour = false }: { title: string; meta: string; className?: string; tour?: boolean }) {
+function ZoneHead({ title, meta, className = "", tour = false, startHere = false }: { title: string; meta: string; className?: string; tour?: boolean; startHere?: boolean }) {
   return (
-    <div data-tour={tour ? "" : undefined} className={`mb-4 flex flex-col gap-1 border-b border-plum-line/60 pb-2 sm:flex-row sm:items-baseline sm:justify-between ${className}`}>
+    <div data-tour={tour ? "" : undefined} data-tour-start={startHere ? "" : undefined} className={`mb-4 flex flex-col gap-1 border-b border-plum-line/60 pb-2 sm:flex-row sm:items-baseline sm:justify-between ${className}`}>
       <h2 className="font-mono text-xl font-semibold uppercase tracking-[0.14em] text-lime">{title}</h2>
       <span className="font-mono text-[11px] text-ash">{meta}</span>
     </div>
@@ -476,7 +523,7 @@ function ZoneHead({ title, meta, className = "", tour = false }: { title: string
 
 function Cell({ label, value, children, valueClassName = "text-lg text-bone" }: { label: string; value: ReactNode; children?: ReactNode; valueClassName?: string }) {
   return (
-    <div className="rounded-xl border border-plum-line/70 bg-plum px-3 py-2.5">
+    <div className="min-w-0 rounded-xl border border-plum-line/70 bg-plum px-3 py-2.5">
       <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ash">{label}</p>
       <p className={`mt-1 font-mono ${valueClassName}`}>{value}</p>
       {children}
