@@ -2,7 +2,7 @@ import { SectionShell } from "./ui";
 
 export function Pov() {
   return (
-    <div className="border-t border-lime/40">
+    <div>
       <SectionShell className="py-10 sm:py-12 lg:py-12">
       <p className="kicker">Built for our own agency first — the outreach engine</p>
       <p className="mt-4 max-w-prose text-lg leading-relaxed text-ash">

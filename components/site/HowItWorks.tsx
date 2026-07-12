@@ -41,12 +41,12 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <div id="how" className="border-y border-lime/40 bg-plum/30 py-10 sm:py-12 lg:py-12">
+    <div id="how" className="bg-plum/30 py-10 sm:py-12 lg:py-12">
       <SectionShell>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="kicker">The pipeline</p>
-            <h2 className="display-lg mt-4 text-bone">Six steps. Curate to proposed.</h2>
+            <h2 className="display-lg mt-4 text-bone"><span className="text-lime">Six steps.</span> Curate to proposed.</h2>
           </div>
           <p className="max-w-sm text-ash">
             The whole path runs on public signal and stops one step short of acting. That last step

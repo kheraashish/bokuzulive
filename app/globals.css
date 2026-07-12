@@ -62,7 +62,10 @@
     html {
       scroll-behavior: auto;
     }
-    *,
+    /* Respect reduced-motion for everything EXCEPT the signature brand effects (the "Click to Enter"
+       shine, the section-line shine, and the hero connector draw), which are intentionally always on
+       so they show regardless of the visitor's OS animation setting. */
+    *:not(.intro-shine):not(.lz-divider):not(.animate-draw),
     *::before,
     *::after {
       animation-duration: 0.001ms !important;
@@ -139,5 +142,68 @@
   .rule {
     height: 1px;
     background: theme("colors.plum.line");
+  }
+
+  /* Full-width lime section divider. Base is a static lime line everywhere; where supported it also
+     carries a slightly brighter shine that sweeps left→right as the line scrolls into view and
+     reverses on scroll-up (see the scroll-driven rule below). */
+  .lz-divider {
+    height: 1px;
+    width: 100%;
+    background-color: rgb(199 242 59 / 0.4);
+  }
+
+  /* "Click to Enter": bright lime text with a white streak that sweeps across the letters, left↔right
+     forever, plus a lime glow so it reads as luminous. (Clipped to the glyphs — the clean look.) */
+  .intro-shine {
+    background-image: linear-gradient(
+      100deg,
+      rgb(199 242 59) 0%,
+      rgb(199 242 59) 36%,
+      #ffffff 50%,
+      rgb(199 242 59) 64%,
+      rgb(199 242 59) 100%
+    );
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 0 14px rgb(199 242 59 / 0.5));
+    animation: introShine 2.6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes introShine {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+
+/* Scroll-driven shine on browsers that support view() timelines (Chromium). Applied regardless of
+   the reduced-motion preference (it's a signature brand effect, exempted in the base layer above). */
+@supports (animation-timeline: view()) {
+  .lz-divider {
+    background-image: linear-gradient(
+      90deg,
+      rgb(199 242 59 / 0) 0%,
+      rgb(199 242 59 / 0.85) 50%,
+      rgb(199 242 59 / 0) 100%
+    );
+    background-repeat: no-repeat;
+    background-size: 45% 100%;
+    animation: lzShine linear both;
+    animation-timeline: view();
+  }
+}
+@keyframes lzShine {
+  from {
+    background-position: -55% 0;
+  }
+  to {
+    background-position: 155% 0;
   }
 }

@@ -6,7 +6,7 @@ export function HonestyRail() {
       <div className="max-w-prose">
         <p className="kicker">The honesty rail</p>
         <h2 className="display-lg mt-4 text-bone">
-          Four things Bokuzu will not do, enforced in code.
+          Four things Bokuzu will not do, <span className="text-lime">enforced in code.</span>
         </h2>
         <p className="mt-5 text-lg leading-relaxed text-ash">
           These are not brand values on a wall. They are constraints in the codebase, checked at

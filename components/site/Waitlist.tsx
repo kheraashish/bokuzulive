@@ -61,12 +61,15 @@ export function Waitlist() {
 
   return (
     <>
-      <div className="border-t border-lime/40">
+      <div>
       <SectionShell id="waitlist" className="py-10 sm:py-12 lg:py-12">
         <div className="relative overflow-hidden rounded-2xl border border-plum-line bg-plum-raise p-8 sm:p-12 lg:p-16">
           <div className="relative max-w-2xl">
             <p className="kicker">Early access</p>
-            <h2 className="display-lg mt-4 text-bone">Want the dashboard without the agency?</h2>
+            <h2 className="display-lg mt-4 text-bone">
+              Want the <span className="text-lime">dashboard</span>{" "}
+              <span className="text-lime">without</span> the <span className="text-lime">agency</span>?
+            </h2>
             <p className="mt-5 max-w-prose text-lg leading-relaxed text-ash">
               Bokuzu&apos;s portal is coming as a standalone subscription: connect your own Google and
               Meta ad accounts and see where every dollar went, what it made back, and where your

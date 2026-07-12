@@ -57,15 +57,25 @@ export default function Home() {
       <HeroIntro />
       <Nav />
       <Hero />
+      <div className="lz-divider" aria-hidden />
       <ClientPortal />
+      <div className="lz-divider" aria-hidden />
       <Pov />
+      <div className="lz-divider" aria-hidden />
       <ConsumesStrip />
+      <div className="lz-divider" aria-hidden />
       <HowItWorks />
+      <div className="lz-divider" aria-hidden />
       <HonestyRail />
+      <div className="lz-divider" aria-hidden />
       <HumanGate />
+      <div className="lz-divider" aria-hidden />
       <WhyLautzu />
+      <div className="lz-divider" aria-hidden />
       <Waitlist />
+      <div className="lz-divider" aria-hidden />
       <Faq />
+      <div className="lz-divider" aria-hidden />
       <Footer />
     </main>
   );

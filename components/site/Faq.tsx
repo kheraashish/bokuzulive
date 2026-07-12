@@ -11,10 +11,10 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <div className="border-t border-lime/40">
+    <div>
       <SectionShell id="faq" className="py-10 sm:py-12 lg:py-12">
       <p className="kicker">Common questions</p>
-      <h2 className="display-lg mt-4 text-bone">Questions, answered honestly.</h2>
+      <h2 className="display-lg mt-4 text-bone"><span className="text-lime">Questions,</span> answered <span className="text-lime">honestly.</span></h2>
 
       <dl className="mt-10 border-t border-plum-line/70">
         {FAQ.map((item, i) => {

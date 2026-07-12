@@ -183,19 +183,22 @@ export function HeroIntro() {
       )}
 
       {phase === "ready" && (
-        <div className="absolute inset-0 grid place-items-center px-6">
-          <button
-            type="button"
-            onClick={enter}
-            autoFocus
-            className="animate-rise rounded-full bg-lime px-8 py-4 font-mono text-sm font-semibold uppercase tracking-[0.2em] text-ink shadow-glow transition-transform duration-200 ease-out hover:bg-lime-press active:scale-[0.98] sm:text-base"
-          >
-            Click here to enter
-          </button>
-        </div>
+        // The whole screen is the enter trigger — tap/click anywhere (desktop or mobile). No box;
+        // just the shining label as a cue. The click is the user gesture browsers need for audio.
+        <button
+          type="button"
+          onClick={enter}
+          autoFocus
+          aria-label="Click to Enter"
+          className="absolute inset-0 grid cursor-pointer place-items-center px-6 focus:outline-none focus-visible:outline-none"
+        >
+          <span className="intro-shine font-mono text-2xl font-semibold uppercase tracking-[0.25em] sm:text-3xl">
+            Click to Enter
+          </span>
+        </button>
       )}
 
-      {(phase === "ready" || phase === "playing") && (
+      {phase === "playing" && (
         <button
           type="button"
           onClick={finish}

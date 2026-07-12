@@ -4,7 +4,7 @@ const sources = ["Meta Ad Library", "TikTok", "Google Transparency", "SERP", "GM
 
 export function ConsumesStrip() {
   return (
-    <div className="border-y border-lime/40 bg-plum/40 py-5">
+    <div className="bg-plum/40 py-5">
       <SectionShell className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-lime">
           Reads only public data, from
