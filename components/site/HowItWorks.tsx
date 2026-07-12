@@ -41,7 +41,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <div id="how" className="border-y border-lime/40 bg-plum/30 py-14 sm:py-16 lg:py-20">
+    <div id="how" className="border-y border-lime/40 bg-plum/30 py-10 sm:py-12 lg:py-12">
       <SectionShell>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

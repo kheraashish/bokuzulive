@@ -13,7 +13,7 @@ const changes = [
 
 export function ClientPortal() {
   return (
-    <div id="portal" className="border-t border-lime/40 py-14 sm:py-16 lg:py-20">
+    <div id="portal" className="border-t border-lime/40 py-10 sm:py-12 lg:py-12">
       <SectionShell className="grid grid-cols-1 gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
         {/* left: the claim */}
         <div className="self-center">

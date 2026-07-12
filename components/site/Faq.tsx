@@ -11,7 +11,8 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <SectionShell id="faq" className="py-14 sm:py-16 lg:py-20">
+    <div className="border-t border-lime/40">
+      <SectionShell id="faq" className="py-10 sm:py-12 lg:py-12">
       <p className="kicker">Common questions</p>
       <h2 className="display-lg mt-4 text-bone">Questions, answered honestly.</h2>
 
@@ -52,5 +53,6 @@ export function Faq() {
         })}
       </dl>
     </SectionShell>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Chip, Dot } from "./ui";
 import { EngineCard, PortalCard } from "./HeroShowcase";
+import { HeroConnectors } from "./HeroConnectors";
 
 // Cinematic split-hero: both faces of Bokuzu on screen at once. A centered statement sits above a
 // dominant, near-full-width band — the internal engine (far left) and the client portal (far right,
@@ -34,35 +35,8 @@ export function Hero() {
           The engine that runs our agency — and the dashboard that proves it to you.
         </p>
 
-        {/* decorative lime connectors from the statement to each card (desktop only), drawn in last */}
-        <div className="mt-6 hidden w-full max-w-6xl lg:block" aria-hidden>
-          <svg viewBox="0 0 1152 40" className="h-9 w-full" fill="none" preserveAspectRatio="xMidYMid meet">
-            {[
-              { d: "M576 3 L150 36", kind: "line" },
-              { d: "M576 3 L1002 36", kind: "line" },
-              { d: "M143 29 L150 37 L157 29", kind: "cap" },
-              { d: "M995 29 L1002 37 L1009 29", kind: "cap" },
-            ].map((c, i) => (
-              <path
-                key={i}
-                d={c.d}
-                pathLength={1}
-                strokeDasharray={1}
-                strokeWidth={1.75}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-                className="animate-draw stroke-lime [filter:drop-shadow(0_0_3px_theme(colors.lime.DEFAULT/45%))]"
-                style={{
-                  // Both lines grow from the centre outward together; the two arrow-heads snap in
-                  // right as the lines reach the cards.
-                  animationDelay: c.kind === "line" ? "500ms" : "1150ms",
-                  animationDuration: c.kind === "line" ? "650ms" : "220ms",
-                }}
-              />
-            ))}
-          </svg>
-        </div>
+        {/* decorative lime connectors from the statement to each card (desktop only) */}
+        <HeroConnectors />
 
         {/* the split: engine (far left) + portal (far right, ~10% larger), large center gap. Mobile: portal first. */}
         <div className="mt-6 grid w-full grid-cols-1 gap-8 lg:mt-4 lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-40">

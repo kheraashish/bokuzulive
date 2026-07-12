@@ -2,7 +2,8 @@ import { SectionShell } from "./ui";
 
 export function Pov() {
   return (
-    <SectionShell className="py-14 sm:py-16 lg:py-20">
+    <div className="border-t border-lime/40">
+      <SectionShell className="py-10 sm:py-12 lg:py-12">
       <p className="kicker">Built for our own agency first — the outreach engine</p>
       <p className="mt-4 max-w-prose text-lg leading-relaxed text-ash">
         Bokuzu also runs Lautzu&apos;s own client acquisition. Same honesty, pointed outward.
@@ -26,5 +27,6 @@ export function Pov() {
         </div>
       </div>
     </SectionShell>
+    </div>
   );
 }

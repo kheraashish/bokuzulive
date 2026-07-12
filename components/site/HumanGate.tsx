@@ -23,7 +23,7 @@ const queue = [
 
 export function HumanGate() {
   return (
-    <div id="gate" className="border-t border-lime/40 bg-plum/30 py-14 sm:py-16 lg:py-20">
+    <div id="gate" className="border-t border-lime/40 bg-plum/30 py-10 sm:py-12 lg:py-12">
       <SectionShell className="grid grid-cols-1 gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <div className="self-center">
           <p className="kicker">Human in the loop</p>

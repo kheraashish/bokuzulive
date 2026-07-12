@@ -13,6 +13,19 @@ const nextConfig = {
   // Pin the tracing root to this project so the standalone server lands at .next/standalone/server.js
   // (not nested under a guessed parent workspace), which is the path runtimes expect.
   outputFileTracingRoot: __dirname,
+  // Don't let the CDN serve a year-old copy of the HTML pages. Next's default for static pages is a
+  // 1-year `s-maxage` that assumes the CDN purges on deploy — Hostinger's CDN honors the year but does
+  // NOT purge, so it keeps serving stale HTML that points at deleted asset hashes (→ CSS/JS 404 →
+  // broken page). Force the pages to revalidate; the hashed /_next/static assets keep their own
+  // immutable long cache (excluded below).
+  async headers() {
+    return [
+      {
+        source: "/((?!_next/static|_next/image).*)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

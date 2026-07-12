@@ -61,7 +61,8 @@ export function Waitlist() {
 
   return (
     <>
-      <SectionShell id="waitlist" className="py-14 sm:py-16 lg:py-20">
+      <div className="border-t border-lime/40">
+      <SectionShell id="waitlist" className="py-10 sm:py-12 lg:py-12">
         <div className="relative overflow-hidden rounded-2xl border border-plum-line bg-plum-raise p-8 sm:p-12 lg:p-16">
           <div className="relative max-w-2xl">
             <p className="kicker">Early access</p>
@@ -119,6 +120,7 @@ export function Waitlist() {
           </div>
         </div>
       </SectionShell>
+      </div>
 
       {/* Step 2: company-website modal. Confirm is disabled until a website is entered. */}
       {modalOpen && (
