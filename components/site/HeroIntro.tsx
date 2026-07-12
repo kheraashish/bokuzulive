@@ -192,8 +192,17 @@ export function HeroIntro() {
           aria-label="Click to Enter"
           className="absolute inset-0 grid cursor-pointer place-items-center px-6 focus:outline-none focus-visible:outline-none"
         >
-          <span className="intro-shine font-mono text-2xl font-semibold uppercase tracking-[0.25em] sm:text-3xl">
-            Click to Enter
+          {/* Lautzu-style entrance: the outlined lime pill bursts outward past the edges while
+              the label grows into place, then the shine sweeps across it forever. */}
+          <span className="intro-enter">
+            <span className="intro-pillbox">
+              <span aria-hidden className="intro-burst" />
+              <span className="intro-grow">
+                <span className="intro-shine font-mono text-2xl font-semibold uppercase tracking-[0.25em] sm:text-3xl">
+                  Click to Enter
+                </span>
+              </span>
+            </span>
           </span>
         </button>
       )}

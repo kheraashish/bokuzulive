@@ -172,6 +172,35 @@
     filter: drop-shadow(0 0 14px rgb(199 242 59 / 0.5));
     animation: introShine 2.6s ease-in-out infinite alternate;
   }
+
+  /* "Click to Enter" entrance (ported from Lautzu, in bokuzu lime): the group fades up, an
+     outlined lime pill flashes outward past the screen edges and vanishes, and the text grows
+     into place — then the .intro-shine sweep runs forever. Pure CSS, no framer-motion. */
+  .intro-enter {
+    animation: introEnter 0.4s ease-out both;
+  }
+  .intro-pillbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2.5rem;
+  }
+  .intro-burst {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid rgb(199 242 59);
+    box-shadow: 0 0 24px rgb(199 242 59 / 0.25);
+    pointer-events: none;
+    transform-origin: center;
+    animation: introBurst 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+  }
+  .intro-grow {
+    display: inline-block;
+    transform-origin: center;
+    animation: introGrow 0.55s ease-out 0.1s both;
+  }
 }
 
 @keyframes introShine {
@@ -180,6 +209,35 @@
   }
   to {
     background-position: 100% 0;
+  }
+}
+
+@keyframes introEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes introBurst {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(30);
+    opacity: 0;
+  }
+}
+@keyframes introGrow {
+  from {
+    transform: scale(0.5);
+  }
+  to {
+    transform: scale(1);
   }
 }
 
