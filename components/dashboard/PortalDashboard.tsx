@@ -29,20 +29,32 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
     setEmbed(new URLSearchParams(window.location.search).get("embed") === "1");
   }, []);
 
-  // When embedded as a decorative preview (?embed=1), the page auto-tours its OWN tagged sections:
-  // park on the 2nd section, scroll UP into the first so its odometer replays, hold it 4s, then cycle
-  // the rest at 2.5s and loop. It scrolls its own window, so it works even when embedded cross-origin
-  // (e.g. on lautzu.com) — the host page needs no script of its own.
+  // When embedded as a decorative preview (?embed=1), the page auto-tours its OWN tagged sections and
+  // runs the odometer animations — so it works even embedded cross-origin (e.g. on lautzu.com); the
+  // host needs no script. The tour parks on the 2nd section, dwells, then rises into the first so its
+  // totals count up from zero, holds it 4s, then cycles the rest at 2.5s and loops.
+  //
+  // START TIMING: it must not run while the host still shows something over it (bokuzu's intro video).
+  // So it announces "ready" to a controlling host and waits for that host's "start"; if nobody acks
+  // (a plain embed), it starts on its own shortly after.
   useEffect(() => {
     if (!embed) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Hide the scrollbar AND, in this decorative preview, the dashboard's own top chrome (the sticky
+    // header + the example ribbon) — the embedding card already has its own browser bar.
     const style = document.createElement("style");
-    style.textContent = "::-webkit-scrollbar{width:0;height:0}html{scrollbar-width:none}";
+    style.textContent =
+      "::-webkit-scrollbar{width:0;height:0}html{scrollbar-width:none}header,[data-example-ribbon]{display:none!important}";
     document.head.appendChild(style);
+
     const HOLD = 2500;
     const HOLD_FIRST = 4000;
+    const PARK = 2000; // dwell on the 2nd section before rising into the first
     let idx = 0;
-    let timer = 0;
+    let tourTimer = 0;
+    let fallback = 0;
+    let started = false;
+
     const targetY = (el: HTMLElement) => {
       const header = document.querySelector("header");
       const headerH = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
@@ -52,28 +64,41 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
     const go = () => {
       const els = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"));
       if (!els.length) {
-        timer = window.setTimeout(go, 800);
+        tourTimer = window.setTimeout(go, 800);
         return;
       }
       const i = idx % els.length;
       window.scrollTo({ top: targetY(els[i]), behavior: "smooth" });
       idx = i + 1;
-      timer = window.setTimeout(go, i === 0 ? HOLD_FIRST : HOLD);
+      tourTimer = window.setTimeout(go, i === 0 ? HOLD_FIRST : HOLD);
     };
-    const start = () => {
+    const runTour = () => {
+      if (started) return;
+      started = true;
       const els = Array.from(document.querySelectorAll<HTMLElement>("[data-tour]"));
-      if (els.length < 2) {
-        timer = window.setTimeout(start, 500);
-        return;
-      }
-      window.scrollTo({ top: targetY(els[1]), behavior: "auto" });
+      if (els.length >= 2) window.scrollTo({ top: targetY(els[1]), behavior: "auto" });
       idx = 0;
-      timer = window.setTimeout(go, 700);
+      tourTimer = window.setTimeout(go, PARK);
     };
-    const startTimer = window.setTimeout(start, 1000);
+
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { bokuzuTour?: string } | null;
+      if (!d || typeof d !== "object") return;
+      if (d.bokuzuTour === "ack") window.clearTimeout(fallback); // a host will drive our start
+      else if (d.bokuzuTour === "start") runTour();
+    };
+    window.addEventListener("message", onMsg);
+    try {
+      window.parent.postMessage({ bokuzuTour: "ready" }, "*");
+    } catch {
+      /* ignore */
+    }
+    fallback = window.setTimeout(runTour, 1200); // no controlling host → start ourselves
+
     return () => {
-      window.clearTimeout(startTimer);
-      window.clearTimeout(timer);
+      window.removeEventListener("message", onMsg);
+      window.clearTimeout(fallback);
+      window.clearTimeout(tourTimer);
       style.remove();
     };
   }, [embed]);
@@ -117,7 +142,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
   return (
     <div className="min-h-screen">
       {example && (
-        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-lime px-4 py-2 text-center font-mono text-[11px] text-ink">
+        <div data-example-ribbon className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-lime px-4 py-2 text-center font-mono text-[11px] text-ink">
           <span className="font-semibold uppercase tracking-[0.12em]">Example dashboard</span>
           <span aria-hidden>·</span>
           <span>real performance data, client anonymized — a live preview</span>

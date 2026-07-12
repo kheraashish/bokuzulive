@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { Band, Chip, Dot } from "./ui";
 
 // The two hero card visuals, always visible side by side (no flip). EngineCard is the internal
@@ -49,8 +52,35 @@ export function EngineCard() {
 
 // ── RIGHT: the client portal ──────────────────────────────────────────────────
 export function PortalCard() {
-  // The preview tours itself (and runs the odometer) inside the iframe via ?embed=1 — so this works
-  // the same whether same-origin (here) or cross-origin (e.g. embedded on lautzu.com).
+  const frameRef = useRef<HTMLIFrameElement>(null);
+
+  // The preview tours + animates itself inside the iframe (?embed=1). It waits for our go-ahead so it
+  // doesn't run behind the intro video: we ack its "ready", then tell it to start 1s after the intro
+  // ends — so the visitor sees the totals count up from zero. (Cross-origin hosts that don't ack, like
+  // lautzu, let the iframe start on its own.)
+  useEffect(() => {
+    let started = false;
+    const send = (msg: unknown) => frameRef.current?.contentWindow?.postMessage(msg, "*");
+    const begin = () => {
+      if (started) return;
+      started = true;
+      window.setTimeout(() => send({ bokuzuTour: "start" }), 1000);
+    };
+    const onMsg = (e: MessageEvent) => {
+      if (e.source !== frameRef.current?.contentWindow) return;
+      if ((e.data as { bokuzuTour?: string })?.bokuzuTour !== "ready") return;
+      send({ bokuzuTour: "ack" });
+      const w = window as unknown as { __bokuzuIntroDone?: boolean };
+      if (w.__bokuzuIntroDone) begin();
+      else window.addEventListener("bokuzu:intro-done", begin, { once: true });
+    };
+    window.addEventListener("message", onMsg);
+    return () => {
+      window.removeEventListener("message", onMsg);
+      window.removeEventListener("bokuzu:intro-done", begin);
+    };
+  }, []);
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-plum-line bg-ink shadow-lift">
       <div className="flex items-center gap-2 border-b border-plum-line px-3 py-2">
@@ -63,6 +93,7 @@ export function PortalCard() {
       </div>
       <div className="relative flex-1 overflow-hidden">
         <iframe
+          ref={frameRef}
           src="/example?embed=1"
           title="Client portal dashboard example: spend, revenue, ROAS and CPA per platform with a log of every account change"
           tabIndex={-1}
