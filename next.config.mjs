@@ -26,6 +26,14 @@ const nextConfig = {
       },
     ];
   },
+  // The dashboard preview's chrome bar shows "bokuzu.com/demo" — make that a real address by
+  // redirecting /demo (and anything under it) to the live example dashboard.
+  async redirects() {
+    return [
+      { source: "/demo", destination: "/example", permanent: true },
+      { source: "/demo/:path*", destination: "/example", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
