@@ -417,7 +417,8 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
           </div>
         </section>
         </div>
-        {/* ── NOTES & DISCLAIMERS ── */}
+        {/* ── NOTES & DISCLAIMERS ── (hidden in the auto-tour preview; not needed in the showcase) ── */}
+        {!embed && (<>
         <ZoneHead title="Notes & disclaimers" meta="Methodology and anonymization" className="mt-12" tour />
         <div className="max-w-3xl space-y-4">
           <div>
@@ -451,10 +452,13 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
             </div>
           )}
         </div>
+        </>)}
 
+        {!embed && (
         <p className="mt-10 border-t border-plum-line/60 pt-6 font-mono text-[11px] text-ash">
           Bokuzu portal · {client.brand} · The numbers update with every Google and Meta platform refresh.
         </p>
+        )}
         {/* In the auto-tour preview, let the last section scroll its heading all the way to the top. */}
         {embed && <div aria-hidden className="h-[55vh]" />}
       </main>
@@ -516,8 +520,12 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
   }, [visible, value, nonce]);
 
   return (
-    <span ref={ref} className={className}>
-      {format(display)}
+    // An invisible sizer holds the full-value width, so when the odometer resets to "$0" on scroll-out
+    // (embed replay) the box never gets narrower. Without this the totals row reflows from two lines to
+    // one as it leaves view, shifting sections below and making the auto-tour overshoot then snap back.
+    <span ref={ref} className={`inline-grid ${className ?? ""}`}>
+      <span aria-hidden className="invisible whitespace-nowrap [grid-area:1/1]">{format(value)}</span>
+      <span className="whitespace-nowrap [grid-area:1/1]">{format(display)}</span>
     </span>
   );
 }
