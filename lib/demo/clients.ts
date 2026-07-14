@@ -129,15 +129,17 @@ const REAL: Record<number, RealRange> = {
   },
 };
 
-// Real funnel mix (90-day) and product feed — applied across windows by spend share.
-const FUNNEL_SHARES: { stage: "TOP" | "MID" | "LOW"; share: number }[] = [
-  { stage: "TOP", share: 0.5024 },
-  { stage: "MID", share: 0.0468 },
-  { stage: "LOW", share: 0.4508 },
-];
+// Real funnel spend per window (the funnel-classified campaigns — a subset of total spend). Shares
+// are derived from these, so both the % and the $ are exact and differ by window.
+const FUNNEL: Record<number, { TOP: number; MID: number; LOW: number }> = {
+  7: { TOP: 29943, MID: 1452, LOW: 16905 },
+  30: { TOP: 134867, MID: 9057, LOW: 99713 },
+  90: { TOP: 406301, MID: 37843, LOW: 364528 },
+};
 // Product feed — real 90-day figures; scaled to the window by Google-spend share below.
 const PRODUCT_FEED_90 = { ads: 3, spend: 65390, impressions: 9_400_000, roas: 2.95 };
 const GOOGLE_SPEND_90 = 714268;
+const SPEND_90 = 984956; // total 90-day spend, for scaling per-ad figures across windows
 
 const ADS_LIVE = 494; // currently-live ad count (not window-scoped)
 // Row-level counts scale with the window (illustrative — see the on-dashboard disclosure). The
@@ -225,16 +227,20 @@ const DEST_PATHS = [
 ];
 const DEST_HOST = "https://www.anonymized-store.example";
 
-function buildAdCopy(total: number): AdCopyRow[] {
+// `factor` scales per-ad spend/impressions to the window; the day-seed varies every field so the
+// table genuinely differs per date range (not just the row count).
+function buildAdCopy(total: number, factor: number, days: number): AdCopyRow[] {
   const rows: AdCopyRow[] = [];
+  const seed = days * 131;
   for (let i = 0; i < total; i++) {
-    const spend = Math.max(3, Math.round(11400 * Math.exp(-i / 46) * (0.55 + 0.9 * rnd(i, 1))));
-    const impressions = Math.round(spend * (18 + 60 * rnd(i, 2)));
-    const ctr = 0.006 + 0.12 * rnd(i, 3);
-    const roas = Math.round((0.3 + 18.5 * rnd(i, 4)) * 100) / 100;
-    const platform: Platform = rnd(i, 5) < 0.83 ? "google" : "meta";
-    const headline = pick(HEADLINES, i, 6);
-    const destination = headline == null ? `${DEST_HOST}${pick(DEST_PATHS, i, 7)}` : DEST_HOST + "/";
+    const k = i + seed;
+    const spend = Math.max(3, Math.round(11400 * factor * Math.exp(-i / 46) * (0.55 + 0.9 * rnd(k, 1))));
+    const impressions = Math.round(spend * (18 + 60 * rnd(k, 2)));
+    const ctr = 0.006 + 0.12 * rnd(k, 3);
+    const roas = Math.round((0.3 + 18.5 * rnd(k, 4)) * 100) / 100;
+    const platform: Platform = rnd(k, 5) < 0.83 ? "google" : "meta";
+    const headline = pick(HEADLINES, k, 6);
+    const destination = headline == null ? `${DEST_HOST}${pick(DEST_PATHS, k, 7)}` : DEST_HOST + "/";
     rows.push({ headline, destination, platform, impressions, ctr, spend, roas });
   }
   return rows.sort((a, b) => b.spend - a.spend);
@@ -324,7 +330,13 @@ export function buildView(client: ClientData, days: number): DashboardView {
     clicks: 0,
   };
 
-  const funnel: FunnelRow[] = FUNNEL_SHARES.map((f) => ({ stage: f.stage, share: f.share, spend: totalsCur.spend * f.share }));
+  const fd = FUNNEL[key];
+  const funnelTotal = fd.TOP + fd.MID + fd.LOW || 1;
+  const funnel: FunnelRow[] = (["TOP", "MID", "LOW"] as const).map((stage) => ({
+    stage,
+    spend: fd[stage],
+    share: fd[stage] / funnelTotal,
+  }));
 
   const c = COUNTS[key];
   const eventTotal = c.gEvents + c.mEvents;
@@ -356,7 +368,7 @@ export function buildView(client: ClientData, days: number): DashboardView {
     funnel,
     adsLive: ADS_LIVE,
     adCopyTotal: c.adCopy,
-    adCopy: buildAdCopy(c.adCopy),
+    adCopy: buildAdCopy(c.adCopy, totalsCur.spend / SPEND_90, real.days),
     productFeed,
     activityWeek: { total: eventTotal, google: c.gEvents, meta: c.mEvents },
     googleEvents: buildEvents("google", c.gEvents),

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { buildView, type Agg, type ClientData, type DashboardView, type Platform } from "@/lib/demo/clients";
+import { buildView, type Agg, type ClientData, type DashboardView, type FunnelRow, type Platform } from "@/lib/demo/clients";
 
 const RANGES = [7, 30, 90] as const;
 const G_HEX = "#D98A5B"; // Google (warm)
@@ -92,7 +92,11 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         return;
       }
       const i = idx % els.length;
-      window.scrollTo({ top: targetY(els[i]), behavior: "smooth" });
+      const el = els[i];
+      window.scrollTo({ top: targetY(el), behavior: "smooth" });
+      // Re-align once layout settles: count-ups above reset to a narrower "$0" as they leave view,
+      // which shifts this section up — recompute the target after that so the heading stays put.
+      window.setTimeout(() => window.scrollTo({ top: targetY(el), behavior: "smooth" }), 750);
       idx = i + 1;
       tourTimer = window.setTimeout(go, i === 0 ? HOLD_FIRST : HOLD);
     };
@@ -225,7 +229,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         </div>
 
         {/* ── ZONE 1: AT A GLANCE ── */}
-        <ZoneHead title="At a glance" meta={`${rangeStr} vs prior period`} tour />
+        <ZoneHead title="At a glance" meta={`${rangeStr} vs prior period`} />
         <div className="mb-3 flex flex-wrap items-center justify-between gap-y-2">
           <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-ash">Conversion-tracked accounts</span>
           <div className="flex items-center gap-2.5">
@@ -234,7 +238,7 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
             <TikTokSlot />
           </div>
         </div>
-        <div className="mb-4 flex flex-wrap items-baseline gap-x-12 gap-y-3">
+        <div data-tour className="mb-4 flex scroll-mt-4 flex-wrap items-baseline gap-x-12 gap-y-3">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <CountUp value={cur.spend} format={money} className="text-4xl font-semibold tracking-tight text-bad sm:text-5xl" />
             <span className="text-sm text-ash">total spend</span>
@@ -280,12 +284,12 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: M_HEX }} /> Meta</span>
               <span className="text-ash/70">bars spend · lines ROAS</span>
             </div>
-            <TrendChart daily={v.daily} money={(n) => money(n)} dateLabel={dateLabel} days={v.days} />
+            <TrendChart key={days} daily={v.daily} money={(n) => money(n)} dateLabel={dateLabel} days={v.days} />
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="rounded-2xl border border-plum-line bg-plum-raise p-5 sm:p-6">
-              <h3 className="mb-4 text-sm font-semibold text-bone">Platform split</h3>
+            <div data-tour className="rounded-2xl border border-plum-line bg-plum-raise p-5 sm:p-6">
+              <h3 className="mb-4 text-xl font-semibold text-lime">Platform split</h3>
               <div className="space-y-5">
                 {split.map((s) => (
                   <div key={s.platform}>
@@ -294,30 +298,18 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
                       <span className="font-mono text-[11px] text-ash"><CountUp value={s.shareSpend} format={pct} /> of spend</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <MiniCell label="Spend" value={<CountUp value={s.spend} format={money} />} />
-                      <MiniCell label="Revenue" value={<CountUp value={s.revenue} format={money} />} />
-                      <MiniCell label="ROAS" value={<CountUp value={s.roas ?? 0} format={x} />} accent />
+                      <MiniCell label="Spend" value={<CountUp value={s.spend} format={money} />} tone="text-bad" />
+                      <MiniCell label="Revenue" value={<CountUp value={s.revenue} format={money} />} tone="text-lime" />
+                      <MiniCell label="ROAS" value={<CountUp value={s.roas ?? 0} format={x} />} tone="text-lime" />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-plum-line bg-plum-raise p-5 sm:p-6">
-              <h3 className="mb-4 text-sm font-semibold text-bone">Funnel breakdown</h3>
-              <div className="space-y-3">
-                {funnel.map((f) => (
-                  <div key={f.stage} className="flex items-center gap-3">
-                    <span className="w-9 font-mono text-[11px] text-ash">{f.stage}</span>
-                    <div className="h-4 flex-1 overflow-hidden rounded-md bg-plum-line/60">
-                      <div className="flex h-full items-center rounded-md px-2 text-[10px] font-medium text-ink" style={{ width: `${Math.max(6, f.share * 100).toFixed(1)}%`, background: f.stage === "LOW" ? "#8FD66A" : f.stage === "MID" ? "#7FB4E0" : G_HEX }}>
-                        <CountUp value={f.share} format={(n) => `${(n * 100).toFixed(1)}%`} />
-                      </div>
-                    </div>
-                    <span className="w-20 text-right font-mono text-[11px] text-bone"><CountUp value={f.spend} format={money} /></span>
-                  </div>
-                ))}
-              </div>
+            <div data-tour className="rounded-2xl border border-plum-line bg-plum-raise p-5 sm:p-6">
+              <h3 className="mb-4 text-xl font-semibold text-lime">Funnel breakdown</h3>
+              <FunnelBars key={days} funnel={funnel} money={money} />
             </div>
           </div>
         </section>
@@ -364,31 +356,46 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
           <CountUp value={v.adCopyTotal} format={int} className="font-mono text-xl text-lime" />
           <span className="text-lg text-lime">the words running now, with performance</span>
         </div>
-        <section className="overflow-hidden rounded-2xl border border-plum-line bg-plum">
+        <div>
+          {/* When expanded, a Collapse button that sticks below the header while you scroll the long
+              table — placed outside the overflow-hidden section so sticky works. */}
+          {adCopyOpen && (
+            <div className="sticky top-[110px] z-20 mb-2 flex justify-end sm:top-[72px]">
+              <button
+                type="button"
+                onClick={() => setAdCopyOpen(false)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-lime/40 bg-plum-raise/95 px-3.5 py-1.5 font-mono text-[11px] text-lime shadow-lg backdrop-blur-sm transition-colors hover:bg-lime hover:text-ink"
+              >
+                Collapse
+                <span aria-hidden>▴</span>
+              </button>
+            </div>
+          )}
+          <section className="overflow-hidden rounded-2xl border border-plum-line bg-plum">
           <div className="relative">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left">
               <thead>
                 <tr className="border-b border-plum-line font-mono text-[11px] uppercase tracking-[0.1em] text-ash">
                   <th className="px-5 py-3 font-medium">Headline</th>
-                  <th className="px-3 py-3 font-medium">Destination</th>
                   <th className="px-3 py-3 font-medium">Platform</th>
                   <th className="px-3 py-3 text-right font-medium">Impr.</th>
                   <th className="px-3 py-3 text-right font-medium">CTR</th>
                   <th className="px-3 py-3 text-right font-medium">Spend</th>
-                  <th className="px-5 py-3 text-right font-medium">ROAS</th>
+                  <th className="px-3 py-3 text-right font-medium">ROAS</th>
+                  <th className="px-5 py-3 font-medium">Destination</th>
                 </tr>
               </thead>
               <tbody>
                 {(adCopyOpen ? v.adCopy : v.adCopy.slice(0, 12)).map((r, i) => (
                   <tr key={i} className="group border-b border-plum-line/60 transition-colors last:border-0 hover:bg-lime/[0.06]">
                     <td className="px-5 py-3 text-sm text-bone transition-colors group-hover:text-lime">{r.headline ?? <span className="text-ash transition-colors group-hover:text-lime">(no headline)</span>}</td>
-                    <td className="max-w-[280px] truncate px-3 py-3 font-mono text-[12px] text-ash transition-colors group-hover:text-lime">{r.destination}</td>
                     <td className="px-3 py-3"><PlatformChip platform={r.platform} small /></td>
-                    <td className="px-3 py-3 text-right font-mono text-sm text-ash transition-colors group-hover:text-lime">{compact(r.impressions)}</td>
-                    <td className="px-3 py-3 text-right font-mono text-sm text-bone transition-colors group-hover:text-lime">{pct(r.ctr)}</td>
-                    <td className="px-3 py-3 text-right font-mono text-sm text-bone transition-colors group-hover:text-lime">{money(r.spend)}</td>
-                    <td className="px-5 py-3 text-right font-mono text-sm text-bone transition-colors group-hover:text-lime">{x(r.roas)}</td>
+                    <td className="px-3 py-3 text-right font-mono text-sm text-ash transition-colors group-hover:text-lime"><CountUp value={r.impressions} format={compact} /></td>
+                    <td className="px-3 py-3 text-right font-mono text-sm text-bone transition-colors group-hover:text-lime"><CountUp value={r.ctr} format={pct} /></td>
+                    <td className="px-3 py-3 text-right font-mono text-sm text-bone transition-colors group-hover:text-lime"><CountUp value={r.spend} format={money} /></td>
+                    <td className="px-3 py-3 text-right font-mono text-sm text-bone transition-colors group-hover:text-lime"><CountUp value={r.roas ?? 0} format={x} /></td>
+                    <td className="max-w-[280px] truncate px-5 py-3 font-mono text-[12px] text-ash transition-colors group-hover:text-lime">{r.destination}</td>
                   </tr>
                 ))}
               </tbody>
@@ -404,11 +411,12 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
               onClick={() => setAdCopyOpen((o) => !o)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-plum-line bg-plum-raise px-3.5 py-1.5 font-mono text-[11px] text-ash transition-colors hover:border-lime/50 hover:text-lime"
             >
-              {adCopyOpen ? "Show less" : `Show all ${v.adCopyTotal} copy ads, sorted by spend`}
+              {adCopyOpen ? "Collapse" : `Show all ${v.adCopyTotal} copy ads, sorted by spend`}
               <span aria-hidden>{adCopyOpen ? "▴" : "▾"}</span>
             </button>
           </div>
         </section>
+        </div>
         {/* ── NOTES & DISCLAIMERS ── */}
         <ZoneHead title="Notes & disclaimers" meta="Methodology and anonymization" className="mt-12" tour />
         <div className="max-w-3xl space-y-4">
@@ -447,6 +455,8 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         <p className="mt-10 border-t border-plum-line/60 pt-6 font-mono text-[11px] text-ash">
           Bokuzu portal · {client.brand} · The numbers update with every Google and Meta platform refresh.
         </p>
+        {/* In the auto-tour preview, let the last section scroll its heading all the way to the top. */}
+        {embed && <div aria-hidden className="h-[55vh]" />}
       </main>
     </div>
   );
@@ -531,11 +541,11 @@ function Cell({ label, value, children, valueClassName = "text-lg text-bone" }: 
   );
 }
 
-function MiniCell({ label, value, accent }: { label: string; value: ReactNode; accent?: boolean }) {
+function MiniCell({ label, value, tone = "text-bone" }: { label: string; value: ReactNode; tone?: string }) {
   return (
     <div className="rounded-lg border border-plum-line/70 bg-plum px-2.5 py-2">
       <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-ash">{label}</p>
-      <p className={`mt-0.5 font-mono text-sm ${accent ? "text-lime" : "text-bone"}`}>{value}</p>
+      <p className={`mt-0.5 font-mono text-sm ${tone}`}>{value}</p>
     </div>
   );
 }
@@ -629,6 +639,20 @@ function EventFeed({ platform, title, total, events }: { platform: Platform; tit
         <PlatformChip platform={platform} />
         <span className="font-mono text-base text-lime"><CountUp value={total} format={(n) => String(Math.round(n))} /> events</span>
       </div>
+      {/* When expanded, a collapse button that sticks to the top while you scroll the long list —
+          Google's on the left, Meta's on the right — so it's always reachable. */}
+      {open && (
+        <div className={`sticky top-[110px] z-20 mb-3 flex sm:top-[72px] ${platform === "google" ? "justify-start" : "justify-end"}`}>
+          <button
+            onClick={() => setOpen(false)}
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-lime/40 bg-plum-raise/95 px-3.5 py-1.5 font-mono text-[11px] text-lime shadow-lg backdrop-blur-sm transition-colors hover:bg-lime hover:text-ink"
+          >
+            Collapse
+            <span aria-hidden>▴</span>
+          </button>
+        </div>
+      )}
       <ol className="space-y-4">
         {shown.map((e, i) => (
           <li key={i} className="group -mx-2 flex gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-lime/[0.06]">
@@ -650,7 +674,7 @@ function EventFeed({ platform, title, total, events }: { platform: Platform; tit
           className="inline-flex items-center gap-1.5 rounded-lg border border-plum-line bg-plum px-3.5 py-1.5 font-mono text-[11px] text-ash transition-colors hover:border-lime/50 hover:text-lime"
           type="button"
         >
-          {open ? "Show less" : `Show all ${total} ${title} events`}
+          {open ? "Collapse" : `Show all ${total} ${title} events`}
           <span aria-hidden>{open ? "▴" : "▾"}</span>
         </button>
       </div>
@@ -667,8 +691,64 @@ function platformSplit(v: DashboardView): SplitRow[] {
     .sort((a, b) => b.spend - a.spend);
 }
 
-// Dual-axis chart: stacked daily spend (Google + Meta) as bars, ROAS per platform as lines.
+// Fires once when the element first scrolls into view — drives the chart bars + funnel draw-ins.
+function useInViewOnce<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setShown(true);
+      return;
+    }
+    const embed = isEmbedMode();
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setShown(true);
+          if (!embed) io.disconnect(); // real page: draw once. embed tour: keep watching to replay.
+        } else if (embed) {
+          setShown(false); // embed: reset so it redraws each time the tour scrolls it back in
+        }
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return [ref, shown] as const;
+}
+
+// Funnel bars: each bar grows left→right and its dollar figure counts up when scrolled into view.
+function FunnelBars({ funnel, money }: { funnel: FunnelRow[]; money: (n: number) => string }) {
+  const [ref, shown] = useInViewOnce<HTMLDivElement>();
+  return (
+    <div ref={ref} className="space-y-3">
+      {funnel.map((f) => (
+        <div key={f.stage} className="flex items-center gap-3">
+          <span className="w-9 shrink-0 font-mono text-[11px] text-ash">{f.stage}</span>
+          <span className="w-14 shrink-0 text-right font-mono text-[13px] text-lime"><CountUp value={f.share} format={(n) => `${(n * 100).toFixed(1)}%`} /></span>
+          <div className="h-4 flex-1 overflow-hidden rounded-md bg-plum-line/60">
+            <div
+              className="bz-anim h-full rounded-md"
+              style={{
+                width: shown ? `${Math.max(6, f.share * 100).toFixed(1)}%` : "0%",
+                background: f.stage === "LOW" ? "#8FD66A" : f.stage === "MID" ? "#7FB4E0" : G_HEX,
+                transition: "width 850ms cubic-bezier(0.23,1,0.32,1)",
+              }}
+            />
+          </div>
+          <span className="w-20 shrink-0 text-right font-mono text-[13px] text-lime"><CountUp value={f.spend} format={money} /></span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Dual-axis chart: stacked daily spend (Google + Meta) as bars, ROAS per platform as lines. On first
+// scroll-in the bars grow up from the axis and the ROAS lines draw left→right.
 function TrendChart({ daily, money, dateLabel, days }: { daily: DashboardView["daily"]; money: (n: number) => string; dateLabel: (o: number) => string; days: number }) {
+  const [wrapRef, shown] = useInViewOnce<HTMLDivElement>();
   const W = 720, H = 250, padL = 8, padR = 8, padT = 16, padB = 26;
   const innerH = H - padT - padB;
   const innerW = W - padL - padR;
@@ -686,7 +766,7 @@ function TrendChart({ daily, money, dateLabel, days }: { daily: DashboardView["d
   const line = (arr: number[]) => arr.map((val, i) => `${cx(i).toFixed(1)},${yR(val).toFixed(1)}`).join(" ");
 
   return (
-    <div className="mt-4 w-full overflow-hidden">
+    <div ref={wrapRef} className="mt-4 w-full overflow-hidden">
       <svg viewBox={`0 0 ${W} ${H}`} className="h-[230px] w-full" preserveAspectRatio="none" role="img" aria-label="Daily spend and ROAS by platform">
         <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#373042" strokeWidth={1} vectorEffect="non-scaling-stroke" />
         {daily.map((d, i) => {
@@ -696,14 +776,23 @@ function TrendChart({ daily, money, dateLabel, days }: { daily: DashboardView["d
           const gY = padT + innerH - gH;
           const mY = gY - mH;
           return (
-            <g key={i}>
+            <g
+              key={i}
+              className="bz-anim"
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "bottom",
+                transform: shown ? "scaleY(1)" : "scaleY(0)",
+                transition: `transform 1100ms cubic-bezier(0.23,1,0.32,1) ${i * 16}ms`,
+              }}
+            >
               <rect x={xPos} y={gY} width={barW} height={gH} fill={G_HEX} opacity={0.7} />
               <rect x={xPos} y={mY} width={barW} height={mH} fill={M_HEX} opacity={0.7} />
             </g>
           );
         })}
-        <polyline points={line(roasG)} fill="none" stroke={G_HEX} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-        <polyline points={line(roasM)} fill="none" stroke={M_HEX} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+        <polyline points={line(roasG)} fill="none" stroke={G_HEX} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" pathLength={1} className="bz-anim" style={{ strokeDasharray: 1, strokeDashoffset: shown ? 0 : 1, transition: "stroke-dashoffset 1500ms ease-out 350ms" }} />
+        <polyline points={line(roasM)} fill="none" stroke={M_HEX} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" pathLength={1} className="bz-anim" style={{ strokeDasharray: 1, strokeDashoffset: shown ? 0 : 1, transition: "stroke-dashoffset 1500ms ease-out 550ms" }} />
       </svg>
       <div className="mt-1 flex justify-between font-mono text-[10px] text-ash">
         <span>{dateLabel(days - 1)}</span>

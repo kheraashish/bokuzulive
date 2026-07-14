@@ -65,7 +65,7 @@
     /* Respect reduced-motion for everything EXCEPT the signature brand effects (the "Click to Enter"
        shine, the section-line shine, and the hero connector draw), which are intentionally always on
        so they show regardless of the visitor's OS animation setting. */
-    *:not(.intro-shine):not(.lz-divider):not(.animate-draw),
+    *:not(.intro-shine):not(.lz-divider):not(.animate-draw):not(.bz-anim),
     *::before,
     *::after {
       animation-duration: 0.001ms !important;
