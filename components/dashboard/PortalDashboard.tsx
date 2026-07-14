@@ -274,9 +274,9 @@ export function PortalDashboard({ client, example = false }: { client: ClientDat
         <p className="mt-2 font-mono text-[11px] text-ash">As reported by Google Ads · Meta Marketing API · {rangeStr} · attribution: in-platform (last click)</p>
 
         {/* ── ZONE 2: PERFORMANCE ── */}
-        <ZoneHead title="Performance" meta={`${rangeStr} · daily grain`} className="mt-12" tour />
+        <ZoneHead title="Performance" meta={`${rangeStr} · daily grain`} className="mt-12" />
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <div className="rounded-2xl border border-plum-line bg-plum p-5 sm:p-6">
+          <div data-tour className="scroll-mt-4 rounded-2xl border border-plum-line bg-plum p-5 sm:p-6">
             <h3 className="text-xl font-semibold text-lime">Spend + ROAS trend</h3>
             <p className="mt-1 text-[12px] text-ash">Daily spend (bars) with ROAS per platform (lines), each on its own attribution.</p>
             <div className="mt-3 flex items-center gap-5 font-mono text-[11px] text-ash">
