@@ -5,6 +5,8 @@ import { ConsumesStrip } from "@/components/site/ConsumesStrip";
 import { Pov } from "@/components/site/Pov";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { HonestyRail } from "@/components/site/HonestyRail";
+import { WrongLetter } from "@/components/site/WrongLetter";
+import { HashScrollLanding } from "@/components/site/HashScrollLanding";
 import { HumanGate } from "@/components/site/HumanGate";
 import { ClientPortal } from "@/components/site/ClientPortal";
 import { WhyLautzu } from "@/components/site/WhyLautzu";
@@ -55,10 +57,15 @@ export default function Home() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }} />
       <HeroIntro />
+      <HashScrollLanding />
       <Nav />
       <Hero />
       <div className="lz-divider" aria-hidden />
       <ClientPortal />
+      <div className="lz-divider" aria-hidden />
+      {/* Directly after the portal on purpose: ClientPortal ends on "If a mistake is made, you'll
+          see that too", and the wrong letter is the literal instance of that claim. */}
+      <WrongLetter />
       <div className="lz-divider" aria-hidden />
       <Pov />
       <div className="lz-divider" aria-hidden />

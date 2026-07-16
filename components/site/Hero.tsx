@@ -32,7 +32,7 @@ export function Hero() {
           className="mt-4 max-w-2xl animate-rise text-lg leading-relaxed text-ash sm:text-xl lg:max-w-none lg:whitespace-nowrap"
           style={{ animationDelay: "200ms" }}
         >
-          The engine that runs our agency — and the dashboard that proves it to you.
+          The engine that runs our agency. And the dashboard that proves it to you.
         </p>
 
         {/* decorative lime connectors from the statement to each card (desktop only) */}
@@ -44,7 +44,7 @@ export function Hero() {
           <figure className="order-2 flex animate-rise flex-col lg:order-1" style={{ animationDelay: "340ms" }}>
             <p className="font-mono text-[11px] uppercase tracking-[0.14em]">
               <span className="text-lime">The engine</span>
-              <span className="text-ash"> — what runs our agency</span>
+              <span className="text-ash"> · what runs our agency</span>
             </p>
             <div className="mt-3 h-[280px] lg:h-[clamp(300px,48vh,440px)]">
               <EngineCard />
@@ -59,13 +59,13 @@ export function Hero() {
           <figure className="order-1 flex animate-rise flex-col lg:order-2" style={{ animationDelay: "500ms" }}>
             <p className="font-mono text-[11px] uppercase tracking-[0.14em]">
               <span className="text-lime">The portal</span>
-              <span className="text-ash"> — what you see</span>
+              <span className="text-ash"> · what you see</span>
             </p>
             <div className="mt-3 h-[440px] lg:h-[clamp(300px,48vh,440px)]">
               <PortalCard />
             </div>
             <p className="mt-4 text-sm leading-relaxed text-ash">
-              Every dollar in, every dollar back, ROAS trend on any date range — and every change we
+              Every dollar in, every dollar back, ROAS trend on any date range. And every change we
               make, logged the moment it happens.
             </p>
           </figure>

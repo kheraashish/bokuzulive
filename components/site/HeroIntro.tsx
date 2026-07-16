@@ -19,6 +19,22 @@ const MOBILE = { src: "/bokuzuheromobile.mp4", poster: "/bokuzuheromobile-poster
 // (the JS module re-initializes), so the intro plays again then. Exactly the desired behavior.
 let introSeen = false;
 
+// One-shot skip, set by the 404 takeover film just before it hard-navigates here. That hard
+// navigation re-initializes `introSeen` above, so without this the visitor would get 7.2s of film
+// followed immediately by the whole intro. Consumed (deleted) on sight: this must never become a
+// permanent skip, because refresh-replays-the-intro is deliberate behavior.
+const SKIP_INTRO_ONCE = "bz_skip_intro_once";
+
+function consumeSkipOnce(): boolean {
+  try {
+    if (sessionStorage.getItem(SKIP_INTRO_ONCE) !== "1") return false;
+    sessionStorage.removeItem(SKIP_INTRO_ONCE);
+    return true;
+  } catch {
+    return false; // private mode
+  }
+}
+
 export function HeroIntro() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // Pick the portrait mobile cut on small screens, the landscape cut otherwise. Resolved on mount
@@ -33,6 +49,15 @@ export function HeroIntro() {
   const [phase, setPhase] = useState<"loading" | "ready" | "playing" | "fading" | "gone">(() =>
     introSeen ? "gone" : "loading"
   );
+
+  // Arriving straight off the 404 film: skip the intro this once. Checked on mount rather than in
+  // the initializer above so the server and the first client render still agree.
+  useEffect(() => {
+    if (consumeSkipOnce()) {
+      introSeen = true;
+      setPhase("gone");
+    }
+  }, []);
 
   // Idle-cursor: hidden while the video plays, reappears on mouse move, hides again after a pause.
   const [cursorHidden, setCursorHidden] = useState(false);

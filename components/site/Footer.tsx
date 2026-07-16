@@ -13,8 +13,8 @@ export function Footer() {
               <span className="text-[17px] font-semibold tracking-tight text-bone">bokuzu</span>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-ash">
-              The honest layer over your ad accounts — a portal that hides nothing, and outreach that
-              never sends without you.
+              The honest layer over your ad accounts: a portal that logs every change, and outreach
+              that never sends without you.
             </p>
           </div>
 

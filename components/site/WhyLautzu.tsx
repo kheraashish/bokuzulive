@@ -18,7 +18,7 @@ export function WhyLautzu() {
 
         <h3 className="display-md mt-12 text-bone">Bokuzu does the digging.</h3>
         <p className="mt-5 text-lg leading-relaxed text-ash">
-          The moment Google Ads and Meta refresh their reporting, the analysis is already done —
+          The moment Google Ads and Meta refresh their reporting, the analysis is already done:
           every budget, bid, keyword and creative change tracked, reconciled, and turned into a clear
           read on what to act on next: which campaign needs budget, which creative is fatiguing,
           which change moved the number. The team reviews and decides; Bokuzu never acts alone.
@@ -27,14 +27,14 @@ export function WhyLautzu() {
         <h3 className="display-md mt-12 text-bone">The people make the ads.</h3>
         <p className="mt-5 text-lg leading-relaxed text-ash">
           That frees the Lautzu team for the work that actually sells: the ads themselves. In the age
-          of social, reels and short video, people judge a product by its ad — so ours are original
+          of social, reels and short video, people judge a product by its ad. So ours are original
           concepts with original music, built to entertain and convert, not another product shot with
           a promise on top. The machine handles the monitoring. The people make the ads. That&apos;s
           what compounds for a brand in the long run.
         </p>
 
         <p className="mt-8 text-lg leading-relaxed text-bone/90">
-          Every Lautzu engagement includes Bokuzu — the same portal, the same change log, the same
+          Every Lautzu engagement includes Bokuzu: the same portal, the same change log, the same
           honesty rail.
         </p>
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RedirectHome } from "./RedirectHome";
+import { NotFoundExperience } from "./NotFoundExperience";
 
 // Global not-found page. Shown for any unknown URL (bad path, typo, crawler guess) or when a route
 // calls notFound(). Branded, reassuring, and auto-returns the visitor to the homepage.
@@ -18,7 +18,7 @@ export default function NotFound() {
       </h1>
 
       <p className="mb-9 max-w-md text-pretty text-ash">
-        That page doesn&apos;t exist on bokuzu.com — the link may be mistyped or out of date.
+        That page doesn&apos;t exist on bokuzu.com. The link may be mistyped or out of date.
         We&apos;re taking you back to the homepage.
       </p>
 
@@ -29,7 +29,7 @@ export default function NotFound() {
         Go to bokuzu.com now
       </a>
 
-      <RedirectHome seconds={2} />
+      <NotFoundExperience />
     </main>
   );
 }

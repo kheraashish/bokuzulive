@@ -4,7 +4,7 @@ export function Pov() {
   return (
     <div>
       <SectionShell className="py-10 sm:py-12 lg:py-12">
-      <p className="kicker">Built for our own agency first — the outreach engine</p>
+      <p className="kicker">The outreach engine</p>
       <p className="mt-4 max-w-prose text-lg leading-relaxed text-ash">
         Bokuzu also runs Lautzu&apos;s own client acquisition. Same honesty, pointed outward.
       </p>

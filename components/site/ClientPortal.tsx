@@ -13,10 +13,10 @@ export function ClientPortal() {
           What you <span className="text-lime">see</span>.
         </h2>
         <p className="mt-5 text-lg leading-relaxed text-ash">
-          Spend, revenue, ROAS and CPA per platform — each on its own attribution, never blended into
+          Spend, revenue, ROAS and CPA per platform, each on its own attribution, never blended into
           a number we&apos;d have to invent. Custom date ranges. A funnel breakdown. Every ad currently
           running with its performance. And a timestamped log of every change made in your accounts:
-          budget moves, bid changes, new campaigns, pauses — logged the moment they happen. If
+          budget moves, bid changes, new campaigns, pauses, logged the moment they happen. If
           something is touched in your account, you can see it. If a mistake is made, you&apos;ll see
           that too.
         </p>
@@ -33,7 +33,7 @@ export function ClientPortal() {
 
         <p className="mt-6 font-mono text-xs leading-relaxed text-ash">
           Every change is logged the moment it happens. Every dollar is synced with every platform
-          refresh. ROAS per platform on its own attribution — a single cross-platform figure would
+          refresh. ROAS per platform on its own attribution: a single cross-platform figure would
           require an incrementality or MMM model, which this dashboard does not fabricate.
         </p>
       </SectionShell>

@@ -5,9 +5,9 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 const SITE = "https://bokuzu.com";
-const title = "Bokuzu — One System, Two Faces, Zero Lies | Honest Ad Dashboard by Lautzu";
+const title = "Bokuzu: One System, Two Faces, Zero Lies | Honest Ad Dashboard by Lautzu";
 const description =
-  "Bokuzu is the honest ad dashboard for Google & Meta by Lautzu. See where every dollar went and what it made back — ROAS per platform, any date range, and every change logged the moment it happens. Never fabricated.";
+  "Bokuzu is the honest ad dashboard for Google & Meta by Lautzu. See where every dollar went and what it made back: ROAS per platform, any date range, and every change logged the moment it happens. Never fabricated.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

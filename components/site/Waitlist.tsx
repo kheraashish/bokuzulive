@@ -73,7 +73,7 @@ export function Waitlist() {
             <p className="mt-5 max-w-prose text-lg leading-relaxed text-ash">
               Bokuzu&apos;s portal is coming as a standalone subscription: connect your own Google and
               Meta ad accounts and see where every dollar went, what it made back, and where your
-              ROAS trend is heading — over any date range you pick. Every change in your accounts,
+              ROAS trend is heading, over any date range you pick. Every change in your accounts,
               logged the moment it happens. No fabricated cross-platform numbers. No last-click
               theatre. Request access and we&apos;ll reach out when a seat opens. One email about your
               invite, nothing else.
@@ -81,7 +81,7 @@ export function Waitlist() {
 
             <p className="mt-6 max-w-prose rounded-xl border border-plum-line bg-plum px-4 py-3 text-sm leading-relaxed text-bone/90">
               The portal is live today for every Lautzu engagement. Standalone subscriptions are in
-              early access — request a seat below.
+              early access. Request a seat below.
             </p>
 
             {done ? (
@@ -144,7 +144,7 @@ export function Waitlist() {
               Your company website
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-ash">
-              So we can take a quick, honest look before we reach out. We assess only public data —
+              So we can take a quick, honest look before we reach out. We assess only public data:
               nothing from your ad accounts.
             </p>
 
