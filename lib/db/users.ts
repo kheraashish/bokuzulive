@@ -144,6 +144,7 @@ export async function completeSetup(userId: string, input: { companyName: string
       country: input.country.trim().slice(0, 80),
     }
   );
+  invalidateSlugCache(); // a brand-new company must resolve immediately, not after the TTL
   await q(`UPDATE portal_users SET client_id = :cid, role = 'owner', phone = :p WHERE id = :uid`, {
     cid: clientId, p: (input.phone || "").trim() || null, uid: userId,
   });
@@ -151,11 +152,52 @@ export async function completeSetup(userId: string, input: { companyName: string
 }
 
 // ── client (company) ──────────────────────────────────────────────────────────
+// Every single-segment URL asks this question, so every crawler guess used to run its own query to
+// discover it was fake. Two costs: a DB blip turned junk URLs into 500s, which Google reads as "retry
+// later" instead of "this doesn't exist", so the junk stays in the crawl queue; and that traffic
+// competed with real clients for a pool capped at 5 connections.
+//
+// The slug list is tiny and near-static (insert-only — nothing renames or deletes a slug), so cache
+// the whole set instead of asking per URL. On a blip we answer from the last known set: slightly
+// stale beats an outage.
+//
+// Note what this deliberately does NOT do: catch the error and call notFound(). That would tell a
+// paying client, mid-blip, that their own portal doesn't exist — matrix film and all. This site
+// cannot ship that lie. A cold start with the DB down still throws, because then the site really is
+// broken, and a comfortable guess would be worse than an honest error.
+let _slugCache: { at: number; slugs: Set<string> } | null = null;
+const SLUG_TTL_MS = 60_000;
+
+// A sick DB should not be probed by every single request: that piles up connection attempts on a
+// pool of 5 exactly when it is least able to take them. So back off after a failure and keep serving
+// the stale set. Tracked on its own clock rather than by ageing `_slugCache.at`, because that would
+// mean a recovered DB went unnoticed for the full TTL. 5s is short enough that recovery is near
+// immediate, and long enough that an outage costs ~1 connection attempt per 5s instead of one per hit.
+let _lastFailAt = 0;
+const FAIL_BACKOFF_MS = 5_000;
+
+/** Drop the cached slug set. Must be called wherever a client row is created. */
+export function invalidateSlugCache(): void {
+  _slugCache = null;
+}
+
 /** Does a company with this slug exist? Lets the /<company> route tell a real client
  *  URL (gate to login) from a typo / bad URL (show the friendly not-found page). */
 export async function clientSlugExists(slug: string): Promise<boolean> {
-  const rows = await q<RowDataPacket[]>(`SELECT 1 AS x FROM clients WHERE slug = :s LIMIT 1`, { s: norm(slug) });
-  return rows.length > 0;
+  const s = norm(slug);
+  const now = Date.now();
+  if (_slugCache && now - _slugCache.at < SLUG_TTL_MS) return _slugCache.slugs.has(s);
+  if (_slugCache && now - _lastFailAt < FAIL_BACKOFF_MS) return _slugCache.slugs.has(s); // still sick; don't pile on
+  try {
+    const rows = await q<RowDataPacket[]>(`SELECT slug FROM clients`);
+    _slugCache = { at: now, slugs: new Set(rows.map((r) => norm(String(r.slug)))) };
+    _lastFailAt = 0;
+    return _slugCache.slugs.has(s);
+  } catch (err) {
+    _lastFailAt = now;
+    if (_slugCache) return _slugCache.slugs.has(s); // serve stale rather than 500
+    throw err; // cold start + DB down: nothing to serve, and guessing would be a lie
+  }
 }
 export async function getClientPublic(clientId: string): Promise<ClientPublic | null> {
   const rows = await q<ClientPublic[]>(

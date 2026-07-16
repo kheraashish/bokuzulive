@@ -2,6 +2,7 @@ import "server-only";
 import crypto from "crypto";
 import type { RowDataPacket } from "mysql2";
 import { q } from "./pool";
+import { invalidateSlugCache } from "./users";
 import { encrypt } from "@/lib/crypto";
 
 // Data access for clients + their ad-account connections. All writes go through here.
@@ -51,6 +52,7 @@ export async function createClient(input: {
       email: input.loginEmail ? norm(input.loginEmail) : null,
     }
   );
+  invalidateSlugCache(); // a brand-new company must resolve immediately, not after the TTL
   return clientId;
 }
 
