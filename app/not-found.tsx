@@ -29,7 +29,7 @@ export default function NotFound() {
         Go to bokuzu.com now
       </a>
 
-      <RedirectHome seconds={5} />
+      <RedirectHome seconds={2} />
     </main>
   );
 }

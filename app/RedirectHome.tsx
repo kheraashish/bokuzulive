@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 // Counts down and then sends the visitor to the homepage. Used by the not-found page so a wrong
 // URL doesn't dead-end — it gently returns them to bokuzu.com.
-export function RedirectHome({ seconds = 5 }: { seconds?: number }) {
+export function RedirectHome({ seconds = 2 }: { seconds?: number }) {
   const [left, setLeft] = useState(seconds);
 
   useEffect(() => {
