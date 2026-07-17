@@ -11,8 +11,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // No skip control; the click-to-enter is the only interaction and it guarantees audio every time.
 const PLAYBACK_RATE = 1.25; // play the intro at 125% speed; pitch preserved by the browser
 
-const DESKTOP = { src: "/herointro.mp4", poster: "/herointro-poster.jpg" };
-const MOBILE = { src: "/bokuzuheromobile.mp4", poster: "/bokuzuheromobile-poster.jpg" };
+// The .v2 in these filenames is a cache-buster, not decoration. Hostinger's CDN caches /public assets
+// by full URL with no revalidation and ignores the next.config Cache-Control override, so re-encoding
+// a file in place leaves edges serving the stale copy indefinitely. A new filename is a guaranteed
+// cache miss -> fresh fetch from origin. BUMP THE VERSION (v2 -> v3 ...) whenever you re-encode these,
+// or the CDN will keep serving the old bytes. Keep the poster's version in step with its video.
+const DESKTOP = { src: "/herointro.v2.mp4", poster: "/herointro-poster.v2.jpg" };
+const MOBILE = { src: "/bokuzuheromobile.v2.mp4", poster: "/bokuzuheromobile-poster.v2.jpg" };
 
 // In-memory, module-scoped flag. It survives client-side navigation (e.g. going to /login and
 // back), so the intro does NOT replay on soft navigation, but it resets on a real hard refresh
