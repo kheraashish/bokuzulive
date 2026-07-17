@@ -61,11 +61,11 @@ export function Waitlist() {
 
   return (
     <>
-      <div>
+      <div className="group/sec">
       <SectionShell id="waitlist" className="py-10 sm:py-12 lg:py-12">
-        <div className="relative overflow-hidden rounded-2xl border border-plum-line bg-plum-raise p-8 sm:p-12 lg:p-16">
+        <div className="lz-shine relative overflow-hidden rounded-2xl border border-plum-line bg-plum-raise p-8 sm:p-12 lg:p-16">
           <div className="relative max-w-2xl">
-            <p className="kicker">Early access</p>
+            <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">Early access</p>
             <h2 className="display-lg mt-4 text-bone">
               Want the <span className="text-lime">dashboard</span>{" "}
               <span className="text-lime">without</span> the <span className="text-lime">agency</span>?

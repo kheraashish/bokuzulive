@@ -13,7 +13,7 @@ export function EngineCard() {
     <div
       role="img"
       aria-label="Internal analysis engine example: audit ledger with source coverage, a rubric-based craft band, a withheld low-signal assessment, and a drafted intro email awaiting approval"
-      className="h-full overflow-hidden rounded-2xl border border-plum-line bg-plum shadow-lift"
+      className="lz-shine h-full overflow-hidden rounded-2xl border border-plum-line bg-plum shadow-lift"
     >
       <div className="flex items-center justify-between border-b border-plum-line px-4 py-3">
         <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ash">
@@ -82,7 +82,7 @@ export function PortalCard() {
   }, []);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-plum-line bg-ink shadow-lift">
+    <div className="lz-shine-ccw flex h-full flex-col overflow-hidden rounded-2xl border border-plum-line bg-ink shadow-lift">
       <div className="flex items-center gap-2 border-b border-plum-line px-3 py-2">
         <span className="flex gap-1.5" aria-hidden>
           <span className="h-2 w-2 rounded-full bg-plum-line" />

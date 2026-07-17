@@ -6,9 +6,9 @@ import { SectionShell } from "./ui";
 // carries keyword weight, linking out to the live /example.
 export function ClientPortal() {
   return (
-    <div id="portal" className="py-10 sm:py-12 lg:py-12">
+    <div id="portal" className="group/sec py-10 sm:py-12 lg:py-12">
       <SectionShell className="max-w-3xl">
-        <p className="kicker">The client portal</p>
+        <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">The client portal</p>
         <h2 className="display-lg mt-4 text-bone">
           What you <span className="text-lime">see</span>.
         </h2>

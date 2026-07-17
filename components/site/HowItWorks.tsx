@@ -41,11 +41,11 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <div id="how" className="bg-plum/30 py-10 sm:py-12 lg:py-12">
+    <div id="how" className="group/sec bg-plum/30 py-10 sm:py-12 lg:py-12">
       <SectionShell>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="kicker">The pipeline</p>
+            <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">The pipeline</p>
             <h2 className="display-lg mt-4 text-bone"><span className="text-lime">Six steps.</span> Curate to proposed.</h2>
           </div>
           <p className="max-w-sm text-ash">

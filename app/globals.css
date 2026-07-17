@@ -56,6 +56,10 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Match body: a scroll-lit eyebrow scaling 1.5x from its left edge can reach past a narrow
+       viewport's right edge. `clip` (not `hidden`) contains that without creating a scroll container,
+       so sticky positioning is unaffected and no horizontal scrollbar can ever appear. */
+    overflow-x: clip;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -71,6 +75,13 @@
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
+    }
+    /* The travelling border shine is purely decorative motion — hide it outright, not just freeze it,
+       so reduced-motion visitors get a clean static card. (!important in @layer base beats the
+       unlayered .lz-shine rule below.) */
+    .lz-shine::after,
+    .lz-shine-ccw::after {
+      display: none !important;
     }
   }
 
@@ -265,3 +276,40 @@
     background-position: 155% 0;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Sister-site refinement language (ported from lautzu.com): scroll-lit section
+   eyebrows + a travelling border shine on showcase cards. These are plain rules,
+   deliberately OUTSIDE @layer, so they outrank the Tailwind `text-ash` utility and
+   the scroll/hover state always wins.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Section eyebrow lights when its section scrolls into view (not only on hover), so scrolling with
+   the pointer off-screen reveals it too. Driven by ShineController. On mobile it lights colour only:
+   a 1.5x label from a left origin would run off a narrow viewport's right edge and read as a bug, so
+   the grow is desktop-only (sm+), matching the sm:group-hover/sec:scale-150 hover utility. */
+.lz-eyebrow-active { color: #c7f23b; }
+@media (min-width: 640px) {
+  .lz-eyebrow-active { transform: scale(1.5); }
+}
+
+/* Travelling shine: a white-into-lime light glides each card's border. Neighbours alternate
+   direction (.lz-shine cw / .lz-shine-ccw ccw). Calm and faint (14s, ~20% brightness).
+   ShineController pauses off-screen cards (.lz-shine-off) so only visible ones animate. */
+@property --lz-shine-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.lz-shine, .lz-shine-ccw { position: relative; }
+.lz-shine::after, .lz-shine-ccw::after {
+  content: ""; position: absolute; inset: 0; z-index: 4; border-radius: inherit; padding: 1.5px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  background: conic-gradient(from var(--lz-shine-angle),
+    transparent 0deg, transparent 262deg,
+    rgb(255 255 255 / 0.28) 300deg, rgb(255 255 255 / 0.72) 318deg,
+    rgb(199 242 59 / 0.8) 334deg, rgb(199 242 59 / 0.32) 352deg, transparent 360deg);
+  filter: drop-shadow(0 0 5px rgb(199 242 59 / 0.4));
+  animation: lz-shine-spin 14s linear infinite;
+}
+.lz-shine-ccw::after { animation-direction: reverse; }
+.lz-shine-off::after { animation-play-state: paused; }
+@keyframes lz-shine-spin { to { --lz-shine-angle: 360deg; } }

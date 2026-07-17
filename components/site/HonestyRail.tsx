@@ -2,9 +2,9 @@ import { SectionShell, Band, Chip, Dot } from "./ui";
 
 export function HonestyRail() {
   return (
-    <SectionShell id="honesty" className="py-10 sm:py-12 lg:py-12">
+    <SectionShell id="honesty" className="group/sec py-10 sm:py-12 lg:py-12">
       <div className="max-w-prose">
-        <p className="kicker">The honesty rail</p>
+        <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">The honesty rail</p>
         <h2 className="display-lg mt-4 text-bone">
           Four things Bokuzu will not do, <span className="text-lime">enforced in code.</span>
         </h2>
@@ -16,7 +16,7 @@ export function HonestyRail() {
 
       <div className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* 1 — bands not numbers (wide, leads with the real element) */}
-        <article className="rounded-2xl border border-plum-line bg-plum-raise p-6 lg:col-span-7">
+        <article className="lz-shine rounded-2xl border border-plum-line bg-plum-raise p-6 lg:col-span-7">
           <div className="flex items-center gap-2">
             <Dot tone="lime" />
             <h3 className="font-semibold text-bone">A score is a band, never a bare number</h3>
@@ -31,7 +31,7 @@ export function HonestyRail() {
         </article>
 
         {/* 2 — withheld (tall, the loudest single word) */}
-        <article className="flex flex-col justify-between rounded-2xl border border-plum-line bg-plum-press p-6 lg:col-span-5">
+        <article className="lz-shine-ccw flex flex-col justify-between rounded-2xl border border-plum-line bg-plum-press p-6 lg:col-span-5">
           <div className="flex items-center gap-2">
             <Dot tone="warn" />
             <h3 className="font-semibold text-bone">Thin signal is withheld, not inflated</h3>
@@ -49,7 +49,7 @@ export function HonestyRail() {
         </article>
 
         {/* 3 — sample concept label (medium) */}
-        <article className="rounded-2xl border border-plum-line bg-plum-raise p-6 lg:col-span-5">
+        <article className="lz-shine rounded-2xl border border-plum-line bg-plum-raise p-6 lg:col-span-5">
           <div className="flex items-center gap-2">
             <Dot tone="clay" />
             <h3 className="font-semibold text-bone">A concept is labeled a concept</h3>
@@ -70,7 +70,7 @@ export function HonestyRail() {
         </article>
 
         {/* 4 — one data-unavailable branch (wide, ledger of statuses) */}
-        <article className="rounded-2xl border border-plum-line bg-plum-raise p-6 lg:col-span-7">
+        <article className="lz-shine-ccw rounded-2xl border border-plum-line bg-plum-raise p-6 lg:col-span-7">
           <div className="flex items-center gap-2">
             <Dot tone="info" />
             <h3 className="font-semibold text-bone">

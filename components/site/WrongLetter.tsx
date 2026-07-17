@@ -5,9 +5,9 @@ import { SectionShell } from "./ui";
 // section describes is the same one the film is built out of.
 export function WrongLetter() {
   return (
-    <div id="wrong-letter" className="scroll-mt-24">
+    <div id="wrong-letter" className="group/sec scroll-mt-24">
       <SectionShell className="py-10 sm:py-12 lg:py-12">
-        <p className="kicker">The page nobody was ever meant to see</p>
+        <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">The page nobody was ever meant to see</p>
 
         <div className="mt-8 grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-[1.2fr_1fr]">
           <h2 className="display-lg text-bone">

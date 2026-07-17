@@ -43,7 +43,7 @@ export function Hero() {
           {/* ENGINE */}
           <figure className="order-2 flex animate-rise flex-col lg:order-1" style={{ animationDelay: "340ms" }}>
             <p className="font-mono text-[11px] uppercase tracking-[0.14em]">
-              <span className="text-lime">The engine</span>
+              <span className="text-ash">The engine</span>
               <span className="text-ash"> · what runs our agency</span>
             </p>
             <div className="mt-3 h-[280px] lg:h-[clamp(300px,48vh,440px)]">
@@ -58,7 +58,7 @@ export function Hero() {
           {/* PORTAL */}
           <figure className="order-1 flex animate-rise flex-col lg:order-2" style={{ animationDelay: "500ms" }}>
             <p className="font-mono text-[11px] uppercase tracking-[0.14em]">
-              <span className="text-lime">The portal</span>
+              <span className="text-ash">The portal</span>
               <span className="text-ash"> · what you see</span>
             </p>
             <div className="mt-3 h-[440px] lg:h-[clamp(300px,48vh,440px)]">

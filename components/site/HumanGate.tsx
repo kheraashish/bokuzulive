@@ -23,10 +23,10 @@ const queue = [
 
 export function HumanGate() {
   return (
-    <div id="gate" className="bg-plum/30 py-10 sm:py-12 lg:py-12">
+    <div id="gate" className="group/sec bg-plum/30 py-10 sm:py-12 lg:py-12">
       <SectionShell className="grid grid-cols-1 gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <div className="self-center">
-          <p className="kicker">Human in the loop</p>
+          <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">Human in the loop</p>
           <h2 className="display-lg mt-4 text-bone">
             The worker proposes.
             <br />
@@ -48,7 +48,7 @@ export function HumanGate() {
         </div>
 
         <div className="self-center">
-          <div className="rounded-2xl border border-plum-line bg-plum shadow-lift">
+          <div className="lz-shine rounded-2xl border border-plum-line bg-plum shadow-lift">
             <div className="flex items-center justify-between border-b border-plum-line px-5 py-3.5">
               <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ash">
                 <Dot tone="warn" /> approvals
@@ -93,7 +93,7 @@ export function HumanGate() {
 function Fact({ k, v }: { k: string; v: string }) {
   return (
     <div>
-      <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-lime">{k}</dt>
+      <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-ash">{k}</dt>
       <dd className="mt-1 text-sm text-bone/90">{v}</dd>
     </div>
   );

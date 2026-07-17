@@ -2,9 +2,9 @@ import { SectionShell } from "./ui";
 
 export function Pov() {
   return (
-    <div>
+    <div className="group/sec">
       <SectionShell className="py-10 sm:py-12 lg:py-12">
-      <p className="kicker">The outreach engine</p>
+      <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">The outreach engine</p>
       <p className="mt-4 max-w-prose text-lg leading-relaxed text-ash">
         Bokuzu also runs Lautzu&apos;s own client acquisition. Same honesty, pointed outward.
       </p>

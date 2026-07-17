@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import ShineController from "@/components/site/ShineController";
 import "./globals.css";
 
 const SITE = "https://bokuzu.com";
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="flex min-h-screen flex-col">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <ShineController />
         <div className="flex-1">{children}</div>
         <footer className="border-t border-plum-line/60 px-5 py-5 text-center">
           <a href="mailto:support@bokuzu.com" className="font-mono text-[11px] text-ash transition-colors hover:text-bone">

@@ -11,9 +11,9 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <div>
+    <div className="group/sec">
       <SectionShell id="faq" className="py-10 sm:py-12 lg:py-12">
-      <p className="kicker">Common questions</p>
+      <p className="kicker inline-block origin-left text-ash transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-hover/sec:scale-150 group-hover/sec:text-lime">Common questions</p>
       <h2 className="display-lg mt-4 text-bone"><span className="text-lime">Questions,</span> answered <span className="text-lime">honestly.</span></h2>
 
       <dl className="mt-10 border-t border-plum-line/70">
