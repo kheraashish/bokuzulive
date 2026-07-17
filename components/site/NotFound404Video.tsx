@@ -135,12 +135,12 @@ export function NotFound404Video({
   if (!media) return null;
 
   return (
-    // Nothing is shown until the film can play through: until then this sits transparent over the
-    // branded 404 page and its blinking dots.
+    // Until the film can play through this sits fully transparent over the poster cover behind it
+    // (NotFoundExperience paints the film's frame 0 there). Opacity SNAPS 0 -> 1 on ready: the frame
+    // underneath is identical, so the snap is invisible, whereas an opacity fade would ghost a moving
+    // frame against the still poster. Only the background-color (letterbox bars) transitions.
     <div
-      className={`fixed inset-0 z-[70] transition-opacity duration-300 ${
-        ready ? "opacity-100" : "pointer-events-none opacity-0"
-      }`}
+      className={`fixed inset-0 z-[70] ${ready ? "opacity-100" : "pointer-events-none opacity-0"}`}
       style={{ backgroundColor: bars, transition: `background-color ${BARS_FADE_MS}ms linear` }}
       onClick={unmute}
     >

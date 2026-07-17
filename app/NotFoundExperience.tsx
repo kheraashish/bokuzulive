@@ -10,8 +10,8 @@ import { RedirectHome } from "./RedirectHome";
 // and only THEN is the countdown allowed to start and take over. The countdown is 2s and the film is
 // 7.2s: start them together and the countdown wins every time, yanking the visitor out mid-matrix.
 //
-//   'pending' → blinking dots, film is buffering/playing, countdown is NOT mounted
-//   'gone'    → no film; the plain countdown page takes it from here
+//   'pending' → the film's frame-0 poster covers the static 404 while the film buffers/plays
+//   'gone'    → no film, no cover; the plain countdown page takes it from here
 const SAFETY_MS = 10000; // if the film component dies during hydration, nobody gets stranded
 
 export function NotFoundExperience() {
@@ -43,14 +43,18 @@ export function NotFoundExperience() {
   return (
     <>
       {film === "pending" ? (
-        <div className="mt-7 flex items-center justify-center gap-2" role="status" aria-label="Loading">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="h-2 w-2 animate-pulse rounded-full bg-lime"
-              style={{ animationDelay: `${i * 160}ms` }}
-            />
-          ))}
+        // The film's own frame 0, painted as an opaque cover over the static 404 from the very first
+        // paint (this client component is server-rendered, so the img is in the initial HTML — never
+        // mounted later by JS, which would flash the markup first). The buffering view IS the film's
+        // opening image, so when the video snaps in on top there is no seam. bg is the film's own
+        // frame-0 edge colour so the letterbox bars match the poster exactly. Off for reduced-motion
+        // (plain countdown, no film) and gone once the film gives up. No dots: the poster already
+        // reads as the 404, so they would be redundant and clash with it.
+        <div aria-hidden className="fixed inset-0 z-[60] bg-[#141118] motion-reduce:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/404/404-169.jpg" alt="" className="hidden h-full w-full object-contain landscape:block" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/404/404-916.jpg" alt="" className="hidden h-full w-full object-contain portrait:block" />
         </div>
       ) : (
         <RedirectHome seconds={2} destination={destination} />
